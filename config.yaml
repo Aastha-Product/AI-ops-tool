@@ -1,0 +1,122 @@
+# All thresholds, prices and weights used by the engine. Every value is a team
+# assumption, scaled from public Lenskart figures (~Rs 20 lakh "Lite" store,
+# ~Rs 35 lakh regular tier-2 store, 300-500 sq ft). Change here, nowhere else.
+
+# ---------- Store size ----------
+default_size_sqft: 400          # used for costing when the size is unknown
+min_size_sqft: 300              # below this -> On hold
+ideal_size_max_sqft: 600        # 300-600 = full size points
+acceptable_size_max_sqft: 800   # 600-800 = fewer points; above = "larger than standard"
+
+# ---------- Cost to open a store (Rs) ----------
+cost_model:
+  "Tier 1": {franchise_fee: 500000, fitout_per_sqft: 3000, inventory: 800000, working_capital: 400000, rent_per_sqft_month: 150}
+  "Tier 2": {franchise_fee: 400000, fitout_per_sqft: 2500, inventory: 600000, working_capital: 300000, rent_per_sqft_month: 80}
+  "Tier 3": {franchise_fee: 300000, fitout_per_sqft: 2000, inventory: 500000, working_capital: 200000, rent_per_sqft_month: 50}
+rent_deposit_months: 6
+# Space "Not yet identified": cost it as rented (most partners rent), the cautious choice.
+costing_space_when_unknown: Rented
+
+# ---------- Investment adequacy (offered / required) ----------
+adequacy:
+  not_approved_below: 0.8
+  on_hold_below: 1.0
+  full_points_at: 1.5
+  base_points_at_1: 10          # points at ratio 1.0; linear up to the factor max at full_points_at
+
+# ---------- Payback ----------
+revenue_model:
+  "Tier 1": {revenue_per_sqft_month: 2500}
+  "Tier 2": {revenue_per_sqft_month: 2000}
+  "Tier 3": {revenue_per_sqft_month: 1500}
+net_margin: 0.15
+
+# ---------- Readiness (months to open, by space status) ----------
+readiness_months: {owned: 2, rented: 3, not_identified: 5}
+
+# ---------- Cannibalisation distance to nearest existing store (km) ----------
+cannibalisation_km: {high_risk_below: 1.5, medium_below: 3.0}
+
+# ---------- Score card (100 points) ----------
+score_weights:
+  investment_adequacy: 25
+  retail_experience: 15
+  business_background: 5
+  space_quality: 15
+  territory_priority: 15
+  location: 15
+  timeline_fit: 5
+  payback: 5
+
+experience_points: {"0": 0, "1-2": 7, "3-5": 12, "6+": 15}
+business_points: {retail_shop: 5, customer_facing_service: 5, other_business: 2, none: 0, unclear: 0}
+space_points:
+  ownership: {Owned: 8, Rented: 5}
+  floor: {Ground: 5, "Mall unit": 4}
+  size: {ideal: 2, acceptable: 1, oversize: 0}
+priority_points: {High: 15, Medium: 8, Low: 3}
+location_points: {far: 15, medium: 8, high_risk: 0, unknown: 8, no_store_in_city: 15}
+timeline_points: {on_time: 5, short_by_1: 2, short_more: 0, unknown: 2}
+payback_points: {"<=18": 5, "18-30": 3, ">30": 0}
+
+# ---------- Onboarding ----------
+on_hold_response_days: 30
+staff:
+  small_store_max_sqft: 400
+  small_store_staff: 2
+  large_store_staff: 3
+post_launch_checkin_days: [30, 60, 90]
+
+# Week numbers are counted from the offer date (week 1). Steps from "fitout" on
+# are shifted later when the partner wants a later launch than the template.
+onboarding_templates:
+  Rented:
+    total_weeks: 12
+    steps:
+      - {key: offer,     name: "Accept offer and pay franchise fee",                     start: 1,  end: 1,  done_when: "Fee receipt issued"}
+      - {key: kyc,       name: "Sign agreement; submit KYC (PAN, GST, bank details, lease proof)", start: 1, end: 2, done_when: "Documents verified"}
+      - {key: site,      name: "Site verification visit",                                 start: 2,  end: 2,  done_when: "Site approved (size, floor)"}
+      - {key: fitout,    name: "Store design and fit-out",                                start: 3,  end: 8,  done_when: "Interiors handed over"}
+      - {key: hiring,    name: "Hire staff",                                              start: 5,  end: 8,  done_when: "Staff joined"}
+      - {key: training,  name: "Owner and staff training",                                start: 6,  end: 9,  done_when: "Training sign-off"}
+      - {key: systems,   name: "Inventory, billing and systems setup",                    start: 8,  end: 10, done_when: "Test bill done"}
+      - {key: launch,    name: "Soft launch and opening",                                 start: 11, end: 12, done_when: "Store open"}
+  Owned:
+    total_weeks: 8
+    steps:
+      - {key: offer,     name: "Accept offer and pay franchise fee",                     start: 1,  end: 1,  done_when: "Fee receipt issued"}
+      - {key: kyc,       name: "Sign agreement; submit KYC (PAN, GST, bank details, ownership proof)", start: 1, end: 2, done_when: "Documents verified"}
+      - {key: site,      name: "Site verification visit",                                 start: 2,  end: 2,  done_when: "Site approved (size, floor)"}
+      - {key: fitout,    name: "Store design and fit-out",                                start: 2,  end: 5,  done_when: "Interiors handed over"}
+      - {key: hiring,    name: "Hire staff",                                              start: 3,  end: 5,  done_when: "Staff joined"}
+      - {key: training,  name: "Owner and staff training",                                start: 4,  end: 6,  done_when: "Training sign-off"}
+      - {key: systems,   name: "Inventory, billing and systems setup",                    start: 5,  end: 7,  done_when: "Test bill done"}
+      - {key: launch,    name: "Soft launch and opening",                                 start: 8,  end: 8,  done_when: "Store open"}
+fixed_start_steps: [offer, kyc, site]   # always scheduled from today
+
+# ---------- Training ----------
+training_tracks:
+  foundation: {name: "Foundation", max_years: 0, days: 10, shadow_weeks: 2}
+  standard:   {name: "Standard",   max_years: 5, days: 6,  shadow_weeks: 1}
+  fast_track: {name: "Fast track", days: 3, shadow_weeks: 0}
+training_modules:
+  - "Brand and product basics"
+  - "Store operations (billing, inventory, opening and closing)"
+  - "Customer service and sales"
+  - "Hiring and managing staff"
+  - "Money basics (daily cash, royalty, tracking payback)"
+  - "Local marketing"
+  - "Compliance and brand standards"
+fast_track_modules:
+  - "Brand systems and reporting"
+  - "Product range"
+  - "Billing and point-of-sale"
+  - "Compliance and brand standards"
+languages: [Kannada, English, Hindi]
+default_language: English
+
+# ---------- LLM ----------
+llm:
+  default_model: claude-sonnet-5-5
+  max_parallel_calls: 8
+  answer_max_words: 120
