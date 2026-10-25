@@ -241,7 +241,9 @@ function viewUpload() {
     <p class="muted">Use the case template as-is: Sheet 1 Applications, Sheet 2 Territories (Sheet 3 Existing stores is fixed and bundled).</p>
     <div class="drop" id="drop">📄 Drop the .xlsx file here or <b>click to choose</b></div>
     <div class="row"><button class="btn primary" id="sample">▶ Try with sample file</button>
-    <a class="btn" href="/api/template" download>⬇ Download empty template</a></div>`;
+    <a class="btn" href="/api/sample-file" download>⬇ Download sample file</a>
+    <a class="btn" href="/api/template" download>⬇ Download empty template</a></div>
+    <p class="muted">The sample file has 27 test applicants plus an “Expected results” sheet showing the decision each should get and chat messages to try.</p>`;
   if (S.summary) {
     const s = S.summary;
     h += `<div class="ok"><b>${esc(S.fileName)}</b>: ${s.applications} applications, ${s.territories} territories, ${s.stores} existing stores read

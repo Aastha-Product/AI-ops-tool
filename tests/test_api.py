@@ -1,7 +1,10 @@
+import io
 import os
+import re
 import sys
 from pathlib import Path
 
+import openpyxl
 from fastapi.testclient import TestClient
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -77,3 +80,15 @@ def test_export_and_template_are_xlsx():
     assert r.status_code == 200 and r.content[:2] == b"PK"
     t = client.get("/api/template")
     assert t.status_code == 200 and t.content[:2] == b"PK"
+
+
+def test_sample_file_download_has_expected_results_and_uploads():
+    r = client.get("/api/sample-file")
+    assert r.status_code == 200 and "Franchise_Sample_Test_Data.xlsx" in r.headers["content-disposition"]
+    wb = openpyxl.load_workbook(io.BytesIO(r.content))
+    assert "Expected results" in wb.sheetnames
+    expected = {row[0]: row[3] for row in wb["Expected results"].iter_rows(min_row=4, values_only=True)
+                if row[0] and re.fullmatch(r"APP-\d+", str(row[0]))}
+    up = client.post("/api/upload", files={"file": ("s.xlsx", r.content, "application/octet-stream")}).json()
+    assert len(expected) == 27
+    assert {k: v["decision"] for k, v in up["result"]["records"].items()} == expected

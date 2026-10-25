@@ -155,6 +155,12 @@ def template():
                     headers={"Content-Disposition": 'attachment; filename="Case1_Franchise_Template.xlsx"'})
 
 
+@app.get("/api/sample-file")
+def sample_file():
+    return Response((ROOT / "data" / "sample_test_data.xlsx").read_bytes(), media_type=XLSX,
+                    headers={"Content-Disposition": 'attachment; filename="Franchise_Sample_Test_Data.xlsx"'})
+
+
 @app.post("/api/run")
 def run(s: Session):
     result, sig, today, eff = _run(s)
