@@ -308,14 +308,7 @@ td.wrap { white-space: normal; min-width: 220px; max-width: 420px; }
 .toast.err { background: #b42318; } .toast.on { display: block; }
 
 /* ------------------------------------------------------------------ v3 visuals */
-.promo { margin-top: auto; border-radius: 16px; padding: 16px; background: radial-gradient(160px 120px at 0% 100%, rgba(20,184,166,.35), transparent 70%), var(--grad-dark); color: #e0e3ff; position: relative; overflow: hidden; }
-.promo::after { content: ""; position: absolute; right: -34px; top: -34px; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, rgba(167,139,250,.55), transparent 70%); }
-.promo .p-ico { width: 34px; height: 34px; border-radius: 10px; background: rgba(255,255,255,.14); display: grid; place-items: center; margin-bottom: 10px; }
-.promo .p-ico svg.i { stroke: #fff; }
-.promo b { display: block; color: #fff; font-size: 14px; margin-bottom: 4px; }
-.promo p { margin: 0 0 12px; font-size: 12.5px; line-height: 1.45; color: #c7cbf5; position: relative; z-index: 1; }
-.promo button { position: relative; z-index: 1; width: 100%; border: 0; border-radius: 10px; padding: 8px 10px; background: #fff; color: #3730a3; font-weight: 650; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
-.side-note { font-size: 11.5px; color: var(--faint); padding: 12px 6px 0; line-height: 1.45; }
+.side-note { margin-top: auto; font-size: 11.5px; color: var(--faint); padding: 12px 6px 0; line-height: 1.45; border-top: 1px solid var(--border); }
 .gsearch { position: relative; flex: 0 1 320px; margin-left: 16px; }
 .gsearch svg.i { position: absolute; left: 13px; top: 11px; color: var(--faint); }
 .gsearch input { width: 100%; height: 38px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); padding: 0 14px 0 37px; color: var(--text); }
@@ -361,13 +354,6 @@ svg.chart:hover [data-tip] { opacity: .5; } svg.chart [data-tip]:hover { opacity
 .donut-list li { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px dashed var(--border); font-size: 13px; cursor: pointer; color: var(--text-2); }
 .donut-list li:last-child { border-bottom: 0; } .donut-list li:hover { color: var(--text); }
 .donut-list b { margin-left: auto; color: var(--text); } .donut-list .pc { width: 40px; text-align: right; color: var(--muted); font-size: 12px; }
-.ai-card { background: radial-gradient(260px 180px at 0% 100%, rgba(20,184,166,.32), transparent 70%), var(--grad-dark); color: #e0e3ff; border: 0; position: relative; overflow: hidden; }
-.ai-card::after { content: ""; position: absolute; right: -50px; bottom: -50px; width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, rgba(167,139,250,.42), transparent 70%); pointer-events: none; }
-.ai-card .card-h { border-color: rgba(255,255,255,.1); } .ai-card h3 { color: #fff; } .ai-card .sub { color: #b9bdf0; }
-.ai-card .as-ico { background: rgba(255,255,255,.14); }
-.ai-card .q { display: flex; gap: 8px; align-items: center; width: 100%; text-align: left; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); color: #eef0ff; border-radius: 10px; padding: 9px 11px; margin-bottom: 8px; cursor: pointer; font-size: 13px; position: relative; z-index: 1; }
-.ai-card .q:hover { background: rgba(255,255,255,.16); } .ai-card .q svg.i { color: #c4b5fd; }
-.ai-card .meta-line { font-size: 12px; color: #b9bdf0; position: relative; z-index: 1; margin-top: 4px; }
 .mini-av { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 11px; flex: none; }
 .who-row { display: flex; align-items: center; gap: 10px; }
 .tip { position: fixed; z-index: 70; pointer-events: none; background: #0f172a; color: #fff; font-size: 12.5px; padding: 6px 10px; border-radius: 8px; box-shadow: var(--shadow-lg); white-space: nowrap; display: none; }
@@ -439,7 +425,7 @@ svg.chart:hover [data-tip] { opacity: .5; } svg.chart [data-tip]:hover { opacity
   .topbar h1 { font-size: 16px; }
   .crumbs, .topbar h1 { max-width: calc(100vw - 190px); }
   .greet h2 { font-size: 21px; }
-  .greet .acts { margin-left: 0; }
+  .top-actions .lbl { display: none; }
 }
 </style>
 </head>
@@ -451,9 +437,6 @@ svg.chart:hover [data-tip] { opacity: .5; } svg.chart [data-tip]:hover { opacity
       <div><b>Franchise Partner Onboarding Engine</b><span>Expansion Ops · Karnataka</span></div>
     </div>
     <nav class="nav" id="nav" aria-label="Main"></nav>
-    <div class="promo"><div class="p-ico" id="promo-ico"></div><b>Decision assistant</b>
-      <p>Ask why any applicant got their decision, or share new facts. Every decision re-runs instantly.</p>
-      <button data-action="assistant" id="promo-btn">Open assistant</button></div>
     <div class="side-note"><b>Rules decide, AI explains.</b> The same file always gives the same result.</div>
   </aside>
   <div class="main">
@@ -685,14 +668,11 @@ function renderShell() {
     const dis = x.needs && !S.result;
     const count = x.count && S.result ? `<span class="count">${records().length}</span>` : "";
     return `<button class="${x.key === S.view ? "active" : ""}" style="--nc:${x.color}" data-view="${x.key}" ${dis ? "disabled" : ""}>${ic(x.icon)}${x.label}${count}</button>`;
-  }).join("") + `<div class="nav-label">Assistant</div><button data-action="assistant" style="--nc:var(--violet)">${ic("spark")}Decision assistant</button>`;
+  }).join("");
   $("crumbs").textContent = S.result ? `${S.fileName || "Dataset"} · run ${S.result.run_date}` : "No data loaded";
   $("title").textContent = S.view === "applicant" && S.result && S.result.records[S.selected] ? `${S.selected} · ${S.result.records[S.selected].name || ""}` : v.title;
-  const ai = META && META.llm_available && useLLM();
-  let a = S.result ? `<span class="chip hide-sm ${ai ? "live" : ""}"><span class="dot"></span>${ai ? "Rules + AI explanations" : "Rules engine"}</span>` : "";
-  if (S.result) a += `<button class="btn sm hide-sm" data-action="export">${ic("download")}Export</button>`;
-  if (S.changeLog.length) a += `<button class="btn sm hide-sm" data-action="reset">${ic("refresh")}Reset updates</button>`;
-  a += `<button class="btn sm ${S.assistant ? "" : "primary"}" data-action="assistant">${ic("spark")}Assistant</button>`;
+  let a = S.result ? `<button class="btn sm" data-action="export" title="Download all decisions as Excel">${ic("download")}<span class="lbl">Export</span></button>` : "";
+  a += `<button class="btn sm ${S.assistant ? "" : "primary"}" data-action="assistant" title="Ask why, or share new facts">${ic("spark")}<span class="lbl">Assistant</span></button>`;
   a += `<div class="me hide-sm"><div class="av">ET</div><div><b>Expansion team</b><span>Karnataka</span></div></div>`;
   $("top-actions").innerHTML = a;
   $("gsearch").style.visibility = S.result ? "visible" : "hidden";
@@ -800,8 +780,7 @@ function viewDashboard() {
   const slots = R.territories.reduce((a, t) => a + (t.slots || 0), 0), filled = R.territories.reduce((a, t) => a + t.approved, 0);
   const outside = recs.filter((r) => !r.territory_id).length;
   let h = `<div class="greet"><div><h2>${greeting()}, <span class="hl">Expansion team</span></h2>
-    <p>${total} applications from <b>${esc(S.fileName || "your file")}</b> decided · ${filled} new stores approved across ${R.territories.length} territories.</p></div>
-    <div class="acts"><button class="btn" data-view="upload">${ic("upload")}Upload new file</button><button class="btn primary" data-action="export">${ic("download")}Export report</button></div></div>`;
+    <p>${total} applications from <b>${esc(S.fileName || "your file")}</b> decided · ${filled} new stores approved across ${R.territories.length} territories.</p></div></div>`;
   if (R.invariant_errors.length) h += `<div class="card card-b" style="border-color:var(--no-bd);margin-bottom:16px">${ic("alert")} Rule check failed: ${esc(R.invariant_errors.join(" "))}</div>`;
   h += `<div class="kpis"><button class="card kpi kpi-hero" data-filter=""><span class="k-go">${ic("arrow")}</span>
       <div class="k-top"><span class="k-ico">${ic("users")}</span>Applications</div><div class="k-val">${total}</div><div class="k-sub"><span class="up">${R.territories.length}</span>territories</div></button>`;
@@ -815,7 +794,7 @@ function viewDashboard() {
       <div class="card-b">${territoryBars(R, recs)}</div></div>
     <div class="card"><div class="card-h"><h3>Store slots filled</h3><span class="sub">approvals vs open slots</span></div><div class="card-b">${slotGauge(filled, slots)}</div></div></div>`;
   const holds = recs.filter((r) => r.decision === "On hold");
-  h += `<div class="grid g-3" style="margin-bottom:16px">
+  h += `<div class="grid g-2" style="margin-bottom:16px">
     <div class="card"><div class="card-h"><h3>Decision mix</h3><span class="sub">click to filter</span></div><div class="card-b"><div class="donut-wrap">${decisionDonut(c, total)}
       <ul class="donut-list">${DECISIONS.map((d) => `<li data-filter="${d}"><i class="c-${cls(d)}"></i>${d}<b>${c[d]}</b><span class="pc">${pct(c[d])}%</span></li>`).join("")}</ul></div></div></div>
     <div class="card"><div class="card-h"><h3>Needs follow-up</h3><span class="sub">${holds.length} on hold</span>${holds.length ? `<div class="right"><button class="btn sm ghost" data-filter="On hold">View all</button></div>` : ""}</div>`;
@@ -823,12 +802,8 @@ function viewDashboard() {
       const fix = (r.reasons.find((x) => x.severity === "blocking" && x.fix) || {}).fix || r.headline;
       return `<li data-app="${esc(r.app_id)}">${avatarHtml(r.name, r.app_id)}<div style="min-width:0"><span class="t-id">${esc(r.name || r.app_id)}</span> <span class="muted mono">${esc(r.app_id)}</span><div class="t-fix clamp">${esc(fix)}</div></div></li>`;
     }).join("")}</ul>` : `<div class="empty">${ic("check")}<div>Nothing waiting on applicants.</div></div>`;
-  const prompts = examplePrompts().slice(0, 3);
-  h += `</div><div class="card ai-card"><div class="card-h"><span class="as-ico">${ic("spark")}</span><h3>Ask the assistant</h3><span class="sub">re-decides instantly</span></div><div class="card-b">
-      ${prompts.map((p) => `<button class="q" data-prompt="${esc(p)}">${ic("arrow")}${esc(p)}</button>`).join("")}
-      <div class="meta-line">${S.changeLog.length ? `${S.changeLog.length} update(s) applied this session · <a href="#" data-action="reset" style="color:#fff;text-decoration:underline">reset</a>` : "Updates you give here re-run every decision and list the knock-on effects."}</div></div></div></div>`;
-  h += `<div class="card"><div class="card-h"><h3>Territory capacity</h3><span class="sub">slots filled by approvals · click a territory to see its applicants</span>
-      <div class="right hide-sm"><span class="chip">${ic("shield")}No two stores in one pin · checked</span></div></div><div class="card-b"><div class="ters">`;
+  h += `</div></div>`;
+  h += `<div class="card"><div class="card-h"><h3>Territory capacity</h3><span class="sub">slots filled · one store per pin code, always</span></div><div class="card-b"><div class="ters">`;
   for (const t of R.territories) {
     const pctFill = t.slots ? Math.min(100, 100 * t.approved / t.slots) : 0;
     h += `<div class="ter p-${esc(t.priority)}" data-ter="${esc(t.territory_id)}"><div class="t-h"><b class="mono">${esc(t.territory_id)}</b><span class="tag ${esc(t.priority)}">${esc(t.priority)}</span><span class="tag">${esc(t.tier)}</span></div>
@@ -864,8 +839,7 @@ function viewApplications() {
   let h = `<div class="card"><div class="toolbar">
     <div class="seg">${["", ...DECISIONS].map((d) => `<button class="${f.dec === d ? "on" : ""}" data-filter="${d}">${d || "All"} <span class="n">${count(d)}</span></button>`).join("")}</div>
     <select class="input" id="f-ter" aria-label="Territory"><option value="">All territories</option>${ters.map((t) => `<option ${f.ter === t ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>
-    <div class="search">${ic("search")}<input class="input" id="f-q" placeholder="Search ID, name, city, pin" value="${esc(f.q)}" aria-label="Search"></div>
-    <div style="margin-left:auto"><button class="btn sm" data-action="export">${ic("download")}Export Excel</button></div></div>`;
+    <div class="search">${ic("search")}<input class="input" id="f-q" placeholder="Search ID, name, city, pin" value="${esc(f.q)}" aria-label="Search"></div></div>`;
   if (!rows.length) return h + `<div class="empty">${ic("search")}<div>No applicants match these filters.</div></div></div>`;
   h += `<div class="table-wrap"><table><thead><tr>${th("ID", "id")}${th("Applicant", "name")}${th("Decision", "dec")}${th("Territory", "ter")}${th("Investment", "ratio", "num")}
     ${th("Score", "score")}${th("Rank", "rank")}<th>Reason</th></tr></thead><tbody>`;
@@ -1096,8 +1070,7 @@ window.addEventListener("resize", () => syncAssistant());
 
 (async function init() {
   $("brand-mark").innerHTML = ic("store"); $("as-ico").innerHTML = ic("spark"); $("menu").innerHTML = ic("menu");
-  $("as-close").innerHTML = ic("x"); $("send").innerHTML = ic("send"); $("promo-ico").innerHTML = ic("spark");
-  $("promo-btn").innerHTML = ic("spark") + "Open assistant";
+  $("as-close").innerHTML = ic("x"); $("send").innerHTML = ic("send");
   restore();
   if (window.innerWidth <= 1280) S.assistant = false;  // overlay: start closed on smaller screens
   try { META = await (await api("/api/meta")).json(); } catch (e) { META = { llm_available: false }; }
