@@ -3,124 +3,423 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Franchise Onboarding Engine</title>
+<title>Franchise Partner Onboarding Engine</title>
+<meta name="description" content="Franchise partner acquisition, geo-selection and onboarding decisions.">
 <link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
+/* ------------------------------------------------------------------ tokens */
 :root {
-  --bg: #f6f7f9; --panel: #ffffff; --text: #111827; --muted: #6b7280; --line: #e5e7eb; --accent: #1f3864; --accent-2: #2f5597;
-  --chip: #eef2f7; --shadow: 0 1px 2px rgba(0,0,0,.05);
-  --ok-bg: #d1fae5; --ok-fg: #065f46; --wait-bg: #fef3c7; --wait-fg: #92400e;
-  --hold-bg: #dbeafe; --hold-fg: #1e3a8a; --no-bg: #fee2e2; --no-fg: #991b1b;
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+  --bg: #f4f6fa; --surface: #ffffff; --surface-2: #f8fafc; --surface-3: #f1f4f9;
+  --border: #e3e8ef; --border-strong: #cdd5df;
+  --text: #0f172a; --text-2: #334155; --muted: #64748b; --faint: #94a3b8;
+  --brand: #2b4acb; --brand-hover: #213ab0; --brand-soft: #eef2ff; --brand-ink: #ffffff;
+  --side-bg: #0d1530; --side-text: #b8c2dc; --side-hover: rgba(255,255,255,.06); --side-active: rgba(120,146,255,.16);
+  --ok: #067647; --ok-bg: #ecfdf3; --ok-bd: #abefc6;
+  --wait: #b54708; --wait-bg: #fffaeb; --wait-bd: #fedf89;
+  --hold: #175cd3; --hold-bg: #eff8ff; --hold-bd: #b2ddff;
+  --no: #b42318; --no-bg: #fef3f2; --no-bd: #fecdca;
+  --shadow-sm: 0 1px 2px rgba(16,24,40,.05);
+  --shadow: 0 1px 3px rgba(16,24,40,.08), 0 1px 2px rgba(16,24,40,.04);
+  --shadow-lg: 0 16px 40px rgba(15,23,42,.16);
+  --radius: 12px; --radius-sm: 8px;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0f1115; --panel: #171a21; --text: #e5e7eb; --muted: #9ca3af; --line: #2a2f3a; --accent: #8fb3ff; --accent-2: #b4cbff;
-    --chip: #222734; --shadow: none;
-    --ok-bg: #064e3b; --ok-fg: #a7f3d0; --wait-bg: #78350f; --wait-fg: #fde68a;
-    --hold-bg: #1e3a8a; --hold-fg: #bfdbfe; --no-bg: #7f1d1d; --no-fg: #fecaca;
+    --bg: #0a0e17; --surface: #111827; --surface-2: #151d2e; --surface-3: #1a2336;
+    --border: #232e42; --border-strong: #33415a;
+    --text: #e8ecf3; --text-2: #c3cad6; --muted: #8b96a9; --faint: #64708a;
+    --brand: #7b93ff; --brand-hover: #95a8ff; --brand-soft: #1b2450; --brand-ink: #0a0e17;
+    --side-bg: #070b16; --side-text: #9aa6c4;
+    --ok: #75e0a7; --ok-bg: #0b2a1c; --ok-bd: #155d3b;
+    --wait: #fdb022; --wait-bg: #2e1f05; --wait-bd: #6b4709;
+    --hold: #84caff; --hold-bg: #0b2240; --hold-bd: #1d4f8c;
+    --no: #fda29b; --no-bg: #36110d; --no-bd: #7a271a;
+    --shadow-sm: none; --shadow: none; --shadow-lg: 0 16px 40px rgba(0,0,0,.5);
   }
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-header { padding: 18px 24px 6px; }
-header h1 { margin: 0; font-size: 1.5rem; }
-header p { margin: 4px 0 0; color: var(--muted); font-size: .9rem; }
-.layout { display: grid; grid-template-columns: minmax(0, 3fr) minmax(320px, 2fr); gap: 20px; padding: 12px 24px 32px; }
-@media (max-width: 900px) { .layout { grid-template-columns: 1fr; padding: 10px 16px 24px; } header { padding: 14px 16px 4px; } }
-.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; box-shadow: var(--shadow); margin-bottom: 16px; }
-.tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 14px; }
-.tabs button { border: 1px solid var(--line); background: var(--panel); color: var(--text); padding: 6px 14px; border-radius: 8px; cursor: pointer; font: inherit; }
-.tabs button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-@media (prefers-color-scheme: dark) { .tabs button.active { color: #0f1115; } }
-h2 { font-size: 1.2rem; margin: 0 0 10px; } h3 { font-size: 1.05rem; margin: 18px 0 8px; }
-.muted { color: var(--muted); font-size: .88rem; }
-.btn { border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 8px; padding: 8px 14px; cursor: pointer; font: inherit; }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-@media (prefers-color-scheme: dark) { .btn.primary { color: #0f1115; } }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: var(--brand); text-decoration: none; }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 6px; }
+.mono { font-family: var(--mono); font-size: .86em; letter-spacing: -.01em; }
+.muted { color: var(--muted); } .faint { color: var(--faint); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+svg.i { width: 16px; height: 16px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ------------------------------------------------------------------ shell */
+.app { display: grid; grid-template-columns: 236px minmax(0, 1fr) auto; min-height: 100vh; }
+.sidebar { background: var(--side-bg); color: var(--side-text); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; padding: 18px 12px; z-index: 30; }
+.brand { display: flex; gap: 10px; align-items: center; padding: 4px 8px 20px; color: #fff; }
+.brand-mark { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, #4f6bff, #2b4acb); display: grid; place-items: center; box-shadow: 0 4px 12px rgba(43,74,203,.4); }
+.brand-mark svg.i { width: 18px; height: 18px; stroke: #fff; }
+.brand b { display: block; font-size: 14px; letter-spacing: -.01em; }
+.brand span { font-size: 11.5px; color: var(--side-text); }
+.nav-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #66739a; padding: 14px 10px 6px; }
+.nav button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; margin: 1px 0; border: 0; background: none; color: var(--side-text); border-radius: 8px; cursor: pointer; text-align: left; font-weight: 500; }
+.nav button:hover { background: var(--side-hover); color: #fff; }
+.nav button.active { background: var(--side-active); color: #fff; box-shadow: inset 2px 0 0 #7b93ff; }
+.nav button:disabled { opacity: .4; cursor: default; background: none; }
+.nav .count { margin-left: auto; font-size: 11.5px; background: rgba(255,255,255,.08); padding: 0 7px; border-radius: 999px; }
+.side-foot { margin-top: auto; padding: 12px 10px; border-top: 1px solid rgba(255,255,255,.07); font-size: 12px; line-height: 1.45; }
+.side-foot b { color: #e3e8ff; font-weight: 600; }
+.main { min-width: 0; display: flex; flex-direction: column; }
+.topbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 12px; padding: 12px 28px; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); min-height: 64px; }
+.topbar h1 { font-size: 18px; margin: 0; letter-spacing: -.015em; font-weight: 650; }
+.crumbs { font-size: 12px; color: var(--muted); }
+.top-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; overflow: hidden; display: none; }
+.progress.on { display: block; }
+.progress::after { content: ""; position: absolute; inset: 0; width: 35%; background: var(--brand); animation: slide 1s ease-in-out infinite; }
+@keyframes slide { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
+.content { padding: 24px 28px 48px; max-width: 1360px; width: 100%; }
+.btn.menu-btn { display: none; }
+
+/* ------------------------------------------------------------------ primitives */
+.btn { display: inline-flex; align-items: center; gap: 7px; padding: 7px 13px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--surface); color: var(--text-2); font-weight: 550; cursor: pointer; white-space: nowrap; box-shadow: var(--shadow-sm); transition: background .12s, border-color .12s; }
+.btn:hover { background: var(--surface-2); border-color: var(--faint); }
+.btn.primary { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); }
+.btn.primary:hover { background: var(--brand-hover); border-color: var(--brand-hover); }
+.btn.ghost { border-color: transparent; background: none; box-shadow: none; }
+.btn.ghost:hover { background: var(--surface-3); }
+.btn.sm { padding: 5px 10px; font-size: 13px; }
+.btn.icon { padding: 7px; }
 .btn:disabled { opacity: .5; cursor: default; }
-.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-.drop { border: 2px dashed var(--line); border-radius: 10px; padding: 22px; text-align: center; cursor: pointer; margin-bottom: 12px; }
-.drop.over { border-color: var(--accent); }
-.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
-table { border-collapse: collapse; width: 100%; font-size: .88rem; }
-th, td { text-align: left; padding: 7px 9px; border-bottom: 1px solid var(--line); vertical-align: top; white-space: nowrap; }
-td.w { white-space: normal; min-width: 260px; }
-th { background: var(--chip); font-weight: 600; white-space: nowrap; }
-tr.click { cursor: pointer; } tr.click:hover td { background: var(--chip); }
-td.num, th.num { text-align: right; white-space: nowrap; }
-.dec { display: inline-block; padding: 1px 8px; border-radius: 999px; font-weight: 600; font-size: .82rem; white-space: nowrap; }
-.d-Approved { background: var(--ok-bg); color: var(--ok-fg); } .d-Waitlisted { background: var(--wait-bg); color: var(--wait-fg); }
-.d-On-hold { background: var(--hold-bg); color: var(--hold-fg); } .d-Not-approved { background: var(--no-bg); color: var(--no-fg); }
-.counts { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
-.count { flex: 1 1 110px; border-radius: 10px; padding: 10px 12px; }
-.count b { display: block; font-size: 1.7rem; line-height: 1.1; }
-.filters { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
-select, input[type=text] { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--text); }
-.reasons div { margin: 4px 0; }
-.facts { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
-.fact { background: var(--chip); border-radius: 8px; padding: 3px 9px; font-size: .85rem; }
-.bar { background: var(--chip); border-radius: 6px; height: 8px; min-width: 80px; }
-.bar i { display: block; height: 8px; border-radius: 6px; background: var(--accent-2); }
-.note { background: var(--chip); border-radius: 8px; padding: 10px 12px; font-size: .9rem; }
-details { margin-top: 10px; } summary { cursor: pointer; font-weight: 600; }
-/* chat */
-.chat { position: sticky; top: 12px; display: flex; flex-direction: column; max-height: calc(100vh - 24px); }
-@media (max-width: 900px) { .chat { position: static; max-height: none; } .msgs { max-height: 60vh; } }
-.chat h2 { margin-bottom: 4px; }
-.msgs { flex: 1 1 auto; overflow-y: auto; min-height: 220px; border: 1px solid var(--line); border-radius: 8px; padding: 10px; margin: 8px 0; }
-.msg { margin: 0 0 10px; padding: 8px 10px; border-radius: 10px; font-size: .9rem; }
-.msg.user { background: var(--accent); color: #fff; margin-left: 15%; }
-@media (prefers-color-scheme: dark) { .msg.user { color: #0f1115; } }
-.msg.assistant { background: var(--chip); margin-right: 5%; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); font-size: 12.5px; color: var(--text-2); white-space: nowrap; }
+.chip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--faint); }
+.chip.live .dot { background: #12b76a; box-shadow: 0 0 0 3px rgba(18,183,106,.18); }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+.card-h { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+.card-h h2, .card-h h3 { margin: 0; font-size: 14.5px; font-weight: 650; letter-spacing: -.01em; }
+.card-h .sub { color: var(--muted); font-size: 12.5px; }
+.card-h .right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.card-b { padding: 16px 18px; }
+.grid { display: grid; gap: 16px; }
+.g-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.g-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.g-main { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+.stack > * + * { margin-top: 16px; }
+.pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px 2px 7px; border-radius: 999px; font-size: 12px; font-weight: 600; border: 1px solid; white-space: nowrap; line-height: 1.5; }
+.pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.pill.lg { font-size: 13px; padding: 4px 12px 4px 10px; }
+.p-Approved { color: var(--ok); background: var(--ok-bg); border-color: var(--ok-bd); }
+.p-Waitlisted { color: var(--wait); background: var(--wait-bg); border-color: var(--wait-bd); }
+.p-On-hold { color: var(--hold); background: var(--hold-bg); border-color: var(--hold-bd); }
+.p-Not-approved { color: var(--no); background: var(--no-bg); border-color: var(--no-bd); }
+.tag { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 1px 7px; border-radius: 6px; background: var(--surface-3); color: var(--text-2); }
+.tag.High { background: var(--no-bg); color: var(--no); } .tag.Medium { background: var(--wait-bg); color: var(--wait); } .tag.Low { background: var(--surface-3); color: var(--muted); }
+.bar { height: 6px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
+.bar > i { display: block; height: 100%; border-radius: 999px; background: var(--brand); }
+.empty { text-align: center; padding: 40px 20px; color: var(--muted); }
+.empty svg.i { width: 28px; height: 28px; color: var(--faint); margin-bottom: 8px; }
+select.input, input.input { height: 34px; padding: 0 10px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); }
+.search { position: relative; } .search svg.i { position: absolute; left: 10px; top: 9px; color: var(--faint); } .search input { padding-left: 32px; width: 240px; }
+
+/* ------------------------------------------------------------------ dashboard */
+.kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin-bottom: 16px; }
+.kpi { padding: 14px 16px; cursor: pointer; transition: border-color .12s, transform .12s; text-align: left; }
+.kpi:hover { border-color: var(--border-strong); }
+.kpi .k-top { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12.5px; font-weight: 550; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kpi .k-ico { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; }
+.kpi .k-val { font-size: 28px; font-weight: 700; letter-spacing: -.02em; margin-top: 8px; line-height: 1.1; }
+.kpi .k-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.ico-all { background: var(--brand-soft); color: var(--brand); } .ico-Approved { background: var(--ok-bg); color: var(--ok); }
+.ico-Waitlisted { background: var(--wait-bg); color: var(--wait); } .ico-On-hold { background: var(--hold-bg); color: var(--hold); } .ico-Not-approved { background: var(--no-bg); color: var(--no); }
+.mix { display: flex; height: 12px; border-radius: 999px; overflow: hidden; background: var(--surface-3); gap: 2px; }
+.mix i { display: block; height: 100%; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; font-size: 12.5px; color: var(--text-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; } .legend b { font-weight: 650; }
+.sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.bg-Approved { background: #17b26a; } .bg-Waitlisted { background: #f79009; } .bg-On-hold { background: #2e90fa; } .bg-Not-approved { background: #f04438; }
+.ters { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+.ter { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; background: var(--surface-2); cursor: pointer; transition: border-color .12s; }
+.ter:hover { border-color: var(--border-strong); }
+.ter .t-h { display: flex; align-items: center; gap: 8px; } .ter .t-h b { font-size: 13.5px; }
+.ter .t-city { color: var(--muted); font-size: 12.5px; margin: 2px 0 10px; }
+.ter .t-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 8px; }
+.ter .t-slots { font-size: 12.5px; font-weight: 600; color: var(--text-2); display: flex; justify-content: space-between; margin-bottom: 6px; }
+.todo { list-style: none; margin: 0; padding: 0; }
+.todo li { display: flex; gap: 10px; padding: 11px 18px; border-top: 1px solid var(--border); cursor: pointer; }
+.todo li:first-child { border-top: 0; } .todo li:hover { background: var(--surface-2); }
+.todo .t-id { font-weight: 600; } .todo .t-fix { color: var(--text-2); font-size: 13px; }
+.todo .t-ico { color: var(--hold); margin-top: 2px; }
+
+/* ------------------------------------------------------------------ table */
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.seg { display: inline-flex; background: var(--surface-3); border-radius: 9px; padding: 3px; gap: 2px; flex-wrap: wrap; }
+.seg button { border: 0; background: none; padding: 5px 11px; border-radius: 7px; cursor: pointer; color: var(--muted); font-weight: 550; font-size: 13px; display: inline-flex; gap: 6px; align-items: center; }
+.seg button.on { background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); }
+.seg .n { font-size: 11.5px; color: var(--faint); font-weight: 600; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+th { position: sticky; top: 0; background: var(--surface-2); color: var(--muted); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+th.sort { cursor: pointer; user-select: none; } th.sort:hover { color: var(--text); }
+th .arr { opacity: .35; margin-left: 3px; } th.sorted .arr { opacity: 1; color: var(--brand); }
+td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; white-space: nowrap; color: var(--text-2); }
+tbody tr:last-child td { border-bottom: 0; }
+tr.click { cursor: pointer; } tr.click:hover td { background: var(--surface-2); }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+td.wrap { white-space: normal; min-width: 220px; max-width: 420px; }
+.clamp { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.who b { color: var(--text); font-weight: 600; display: block; } .who span { font-size: 12px; color: var(--muted); }
+.scorecell { display: flex; align-items: center; gap: 8px; min-width: 110px; } .scorecell .bar { flex: 1; min-width: 48px; } .scorecell b { width: 34px; text-align: right; color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+.money b { color: var(--text); font-weight: 600; } .money span { font-size: 12px; color: var(--muted); }
+.ratio-ok { color: var(--ok); } .ratio-low { color: var(--no); } .ratio-mid { color: var(--wait); }
+.tfoot { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12.5px; }
+
+/* ------------------------------------------------------------------ applicant */
+.profile { display: flex; gap: 16px; align-items: flex-start; padding: 20px; }
+.avatar { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; font-weight: 700; font-size: 18px; color: #fff; flex: none; }
+.profile h2 { margin: 0; font-size: 20px; letter-spacing: -.015em; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.profile .meta { color: var(--muted); font-size: 13px; margin-top: 3px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.profile .meta span { display: inline-flex; align-items: center; gap: 5px; }
+.headline { margin-top: 10px; font-size: 14px; color: var(--text); font-weight: 500; }
+.p-nav { margin-left: auto; display: flex; gap: 6px; }
+.metrics { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 1px solid var(--border); }
+.metric { padding: 14px 20px; border-left: 1px solid var(--border); } .metric:first-child { border-left: 0; }
+.metric .m-l { font-size: 12px; color: var(--muted); font-weight: 550; }
+.metric .m-v { font-size: 19px; font-weight: 700; letter-spacing: -.015em; margin-top: 2px; }
+.metric .m-s { font-size: 12px; color: var(--muted); }
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); padding: 0 12px; overflow-x: auto; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tabs button { border: 0; background: none; padding: 12px 10px; cursor: pointer; color: var(--muted); font-weight: 550; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.tabs button:hover { color: var(--text); } .tabs button.on { color: var(--brand); border-bottom-color: var(--brand); }
+.reasons { list-style: none; margin: 0; padding: 0; }
+.reasons li { display: flex; gap: 10px; padding: 10px 12px; border-radius: 9px; margin-bottom: 6px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2); }
+.reasons li svg.i { margin-top: 2px; }
+.r-blocking { border-color: var(--no-bd) !important; background: var(--no-bg) !important; } .r-blocking svg.i { color: var(--no); }
+.r-decision svg.i { color: var(--brand); } .r-warning svg.i { color: var(--wait); } .r-info svg.i { color: var(--muted); }
+.sec-title { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 650; margin: 18px 0 8px; }
+.sec-title:first-child { margin-top: 0; }
+.steps-list { margin: 0; padding: 0; list-style: none; counter-reset: s; }
+.steps-list li { position: relative; padding: 0 0 12px 34px; color: var(--text-2); }
+.steps-list li::before { counter-increment: s; content: counter(s); position: absolute; left: 0; top: 0; width: 22px; height: 22px; border-radius: 50%; background: var(--brand-soft); color: var(--brand); font-size: 12px; font-weight: 700; display: grid; place-items: center; }
+.callout { display: flex; gap: 10px; padding: 12px 14px; border-radius: 10px; background: var(--brand-soft); color: var(--text); font-size: 13.5px; }
+.callout svg.i { color: var(--brand); margin-top: 2px; }
+.timeline { list-style: none; margin: 0; padding: 0; }
+.timeline li { position: relative; padding: 0 0 18px 30px; }
+.timeline li::before { content: ""; position: absolute; left: 7px; top: 18px; bottom: -2px; width: 2px; background: var(--border); }
+.timeline li:last-child::before { display: none; }
+.timeline .dot { position: absolute; left: 0; top: 3px; width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--brand); background: var(--surface); }
+.timeline li.launch .dot { background: var(--brand); }
+.timeline .t-top { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; }
+.timeline .t-top b { color: var(--text); font-weight: 600; }
+.timeline .t-when { font-size: 12.5px; color: var(--brand); font-weight: 600; }
+.timeline .t-det { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+.timeline .t-done { font-size: 12px; color: var(--muted); }
+.kv { display: grid; grid-template-columns: 200px 1fr; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.kv div { padding: 9px 12px; border-bottom: 1px solid var(--border); } .kv div:nth-last-child(-n+2) { border-bottom: 0; }
+.kv .k { background: var(--surface-2); color: var(--muted); font-weight: 550; font-size: 12.5px; } .kv .v { color: var(--text); }
+.modules { display: flex; flex-wrap: wrap; gap: 6px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
+.fact { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; background: var(--surface-2); }
+.fact .f-l { font-size: 12px; color: var(--muted); } .fact .f-v { font-weight: 650; color: var(--text); margin-top: 1px; }
+
+/* ------------------------------------------------------------------ upload / method */
+.hero { padding: 28px; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 28px; align-items: center; }
+.hero h2 { font-size: 22px; margin: 0 0 6px; letter-spacing: -.02em; }
+.hero p { margin: 0 0 18px; color: var(--muted); }
+.drop { border: 1.5px dashed var(--border-strong); border-radius: 14px; padding: 30px 20px; text-align: center; cursor: pointer; background: var(--surface-2); transition: border-color .12s, background .12s; }
+.drop:hover, .drop.over { border-color: var(--brand); background: var(--brand-soft); }
+.drop .d-ico { width: 46px; height: 46px; margin: 0 auto 10px; border-radius: 12px; background: var(--brand-soft); color: var(--brand); display: grid; place-items: center; }
+.drop .d-ico svg.i { width: 22px; height: 22px; }
+.drop b { display: block; color: var(--text); } .drop span { font-size: 12.5px; color: var(--muted); }
+.how { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.how .card { padding: 16px; } .how .n { width: 26px; height: 26px; border-radius: 8px; background: var(--brand-soft); color: var(--brand); font-weight: 700; display: grid; place-items: center; margin-bottom: 10px; font-size: 13px; }
+.how b { display: block; margin-bottom: 3px; } .how p { margin: 0; color: var(--muted); font-size: 13px; }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; }
+.stats div { padding: 14px 18px; border-left: 1px solid var(--border); } .stats div:first-child { border-left: 0; }
+.stats b { display: block; font-size: 22px; font-weight: 700; letter-spacing: -.02em; } .stats span { font-size: 12.5px; color: var(--muted); }
+.gate { padding: 16px; } .gate .g-ico { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; margin-bottom: 10px; }
+.gate b { display: block; margin-bottom: 4px; } .gate p { margin: 0; color: var(--text-2); font-size: 13px; }
+.weights div { display: grid; grid-template-columns: 210px 1fr 44px; gap: 12px; align-items: center; padding: 7px 0; font-size: 13px; }
+.weights .bar > i { background: var(--brand); }
+
+/* ------------------------------------------------------------------ assistant */
+.assistant { width: 392px; border-left: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow: hidden; z-index: 25; }
+.assistant.closed { display: none; }
+.as-h { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+.as-ico { width: 32px; height: 32px; border-radius: 9px; background: linear-gradient(135deg, #6d83ff, #2b4acb); display: grid; place-items: center; color: #fff; }
+.as-ico svg.i { stroke: #fff; }
+.as-h b { display: block; font-size: 14px; } .as-h span { font-size: 12px; color: var(--muted); }
+.as-h .right { margin-left: auto; display: flex; gap: 4px; }
+.as-ctl { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-bottom: 1px solid var(--border); font-size: 12.5px; color: var(--muted); }
+.switch { position: relative; width: 32px; height: 18px; flex: none; }
+.switch input { opacity: 0; width: 100%; height: 100%; position: absolute; margin: 0; cursor: pointer; }
+.switch span { position: absolute; inset: 0; border-radius: 999px; background: var(--border-strong); transition: background .15s; pointer-events: none; }
+.switch span::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform .15s; box-shadow: var(--shadow-sm); }
+.switch input:checked + span { background: var(--brand); } .switch input:checked + span::after { transform: translateX(14px); }
+.switch input:disabled + span { opacity: .5; }
+.msgs { flex: 1; min-height: 0; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.msg { max-width: 92%; font-size: 13.5px; line-height: 1.55; }
+.msg.m-user { align-self: flex-end; background: var(--brand); color: var(--brand-ink); padding: 9px 13px; border-radius: 14px 14px 4px 14px; }
+.msg.m-assistant { align-self: flex-start; background: var(--surface-2); border: 1px solid var(--border); padding: 10px 13px; border-radius: 14px 14px 14px 4px; color: var(--text-2); }
+.msg.m-assistant b { color: var(--text); }
 .msg p { margin: 0 0 6px; } .msg p:last-child { margin: 0; } .msg ul { margin: 4px 0 6px; padding-left: 18px; }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
-.chip { border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 999px; padding: 4px 10px; font: inherit; font-size: .82rem; cursor: pointer; }
-.chat form { display: flex; gap: 6px; } .chat form input { flex: 1; }
-.toggle { display: flex; align-items: center; gap: 6px; font-size: .88rem; }
-.busy { position: fixed; top: 10px; right: 14px; background: var(--accent); color: #fff; padding: 6px 12px; border-radius: 8px; display: none; z-index: 9; font-size: .88rem; }
-@media (prefers-color-scheme: dark) { .busy { color: #0f1115; } }
-.err { background: var(--no-bg); color: var(--no-fg); padding: 8px 12px; border-radius: 8px; margin-bottom: 10px; }
-.ok { background: var(--ok-bg); color: var(--ok-fg); padding: 8px 12px; border-radius: 8px; margin: 10px 0; }
+.welcome { text-align: center; padding: 18px 6px 4px; }
+.welcome .as-ico { width: 44px; height: 44px; margin: 0 auto 10px; border-radius: 12px; }
+.welcome b { display: block; font-size: 15px; color: var(--text); } .welcome p { color: var(--muted); font-size: 13px; margin: 4px 0 0; }
+.sugg { padding: 0 16px 10px; display: flex; flex-direction: column; gap: 6px; }
+.sugg-title { font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--faint); font-weight: 650; }
+.sugg button { text-align: left; border: 1px solid var(--border); background: var(--surface); border-radius: 9px; padding: 7px 11px; cursor: pointer; color: var(--text-2); font-size: 13px; display: flex; gap: 8px; align-items: center; }
+.sugg button:hover { border-color: var(--brand); color: var(--text); }
+.sugg button svg.i { color: var(--faint); }
+.sugg.compact { flex-direction: row; flex-wrap: wrap; padding-bottom: 10px; }
+.sugg.compact button { white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; border-radius: 999px; padding: 4px 11px; font-size: 12.5px; }
+.composer { border-top: 1px solid var(--border); padding: 12px 16px 14px; }
+.composer form { display: flex; gap: 8px; align-items: flex-end; border: 1px solid var(--border-strong); border-radius: 12px; padding: 6px 6px 6px 12px; background: var(--surface); }
+.composer form:focus-within { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
+.composer textarea { flex: 1; border: 0; outline: 0; resize: none; background: none; padding: 6px 0; max-height: 120px; min-height: 22px; line-height: 1.45; }
+.composer .foot { display: flex; justify-content: space-between; gap: 8px; margin-top: 8px; font-size: 12px; color: var(--faint); }
+.typing { display: inline-flex; gap: 4px; padding: 4px 2px; } .typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--faint); animation: blink 1s infinite; }
+.typing i:nth-child(2) { animation-delay: .15s; } .typing i:nth-child(3) { animation-delay: .3s; }
+@keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+.backdrop { display: none; }
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1d2939; color: #fff; padding: 10px 16px; border-radius: 10px; box-shadow: var(--shadow-lg); z-index: 60; font-size: 13.5px; display: none; max-width: 90vw; }
+.toast.err { background: #b42318; } .toast.on { display: block; }
+
+/* ------------------------------------------------------------------ responsive */
+@media (max-width: 1280px) {
+  .assistant { position: fixed; right: 0; top: 0; box-shadow: var(--shadow-lg); z-index: 50; }
+  .backdrop.on { display: block; position: fixed; inset: 0; background: rgba(15,23,42,.35); z-index: 45; }
+}
+@media (max-width: 960px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .sidebar { position: fixed; left: 0; top: 0; width: 248px; transform: translateX(-100%); transition: transform .2s; box-shadow: var(--shadow-lg); z-index: 55; }
+  .sidebar.open { transform: none; }
+  .btn.menu-btn { display: inline-flex; }
+  .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .metric:nth-child(4) { border-left: 0; } .metric:nth-child(n+4) { border-top: 1px solid var(--border); }
+  .g-2, .g-3, .g-main, .hero, .how { grid-template-columns: minmax(0, 1fr); }
+  .topbar { padding: 10px 16px; } .content { padding: 16px 16px 40px; }
+  .assistant { width: 100%; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .stats div:nth-child(3) { border-left: 0; } .stats div:nth-child(n+3) { border-top: 1px solid var(--border); }
+  .kv { grid-template-columns: 130px 1fr; }
+  .weights div { grid-template-columns: 1fr 70px 34px; }
+  .hide-sm { display: none !important; }
+}
+@media (max-width: 600px) {
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .metric { border-left: 0 !important; border-top: 1px solid var(--border); }
+  .profile { flex-wrap: wrap; } .p-nav { margin-left: 0; }
+  .search input { width: 100%; } .search { flex: 1; }
+  .topbar h1 { font-size: 16px; }
+}
 </style>
 </head>
 <body>
-<div class="busy" id="busy">Working…</div>
-<header>
-  <h1>🏬 Franchise Partner Onboarding Engine</h1>
-  <p>Upload applications → every applicant gets a decision, the reasons, next steps and (if approved) a dated onboarding checklist and training plan. Rules decide; AI only explains.</p>
-</header>
-<div class="layout">
-  <main>
-    <div class="tabs" id="tabs"></div>
-    <div id="error"></div>
-    <div id="view"></div>
-  </main>
-  <aside class="card chat" id="chat">
-    <h2>💬 Ask or update</h2>
-    <label class="toggle"><input type="checkbox" id="ai"> <span id="ai-label">Use AI for free text &amp; answers</span></label>
-    <div class="muted" id="ai-note"></div>
-    <div class="msgs" id="msgs"></div>
-    <div class="chips" id="chips"></div>
-    <form id="chat-form"><input type="text" id="chat-input" placeholder="e.g. Why is APP-007 on hold?" autocomplete="off" maxlength="2000"><button class="btn primary" type="submit">Send</button></form>
-    <div class="row" style="margin-top:8px"><button class="btn" id="reset">↺ Reset to uploaded file</button><button class="btn" id="clear">Clear chat</button></div>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark" id="brand-mark"></div>
+      <div><b>Franchise Partner Onboarding Engine</b><span>Expansion Ops · Karnataka</span></div>
+    </div>
+    <nav class="nav" id="nav" aria-label="Main"></nav>
+    <div class="side-foot"><b>Rules decide, AI explains.</b><br>Every decision comes from fixed rules and a score card; the same file always gives the same result.</div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <button class="btn icon ghost menu-btn" id="menu" aria-label="Open navigation"></button>
+      <div><div class="crumbs" id="crumbs"></div><h1 id="title"></h1></div>
+      <div class="top-actions" id="top-actions"></div>
+      <div class="progress" id="progress"></div>
+    </header>
+    <div class="content" id="view"></div>
+  </div>
+  <aside class="assistant" id="assistant" aria-label="Decision assistant">
+    <div class="as-h">
+      <div class="as-ico" id="as-ico"></div>
+      <div><b>Decision assistant</b><span>Ask why · give new facts · re-decide</span></div>
+      <div class="right"><button class="btn icon ghost" id="as-close" aria-label="Close assistant"></button></div>
+    </div>
+    <div class="as-ctl">
+      <label class="switch"><input type="checkbox" id="ai" aria-label="Use AI"><span></span></label>
+      <span id="ai-note">AI phrasing</span>
+    </div>
+    <div class="msgs" id="msgs" aria-live="polite"></div>
+    <div class="sugg" id="sugg"></div>
+    <div class="composer">
+      <form id="chat-form">
+        <textarea id="chat-input" rows="1" maxlength="2000" placeholder="Ask about an applicant or share an update…" aria-label="Message"></textarea>
+        <button class="btn primary icon" type="submit" id="send" aria-label="Send"></button>
+      </form>
+      <div class="foot"><span>Enter to send · Shift+Enter for a new line</span><span><a href="#" id="reset">Reset data</a> · <a href="#" id="clear">Clear chat</a></span></div>
+    </div>
   </aside>
 </div>
+<div class="backdrop" id="backdrop"></div>
+<div class="toast" id="toast" role="status"></div>
 <input type="file" id="file" accept=".xlsx,.xlsm" hidden>
 <script>
 "use strict";
-const VIEWS = ["Upload", "Results", "Applicant", "How it decides"];
-const SEV = { blocking: "⛔", decision: "📌", warning: "⚠️", info: "ℹ️" };
+// ---------------------------------------------------------------- icons (stroke icons, 24px grid)
+const ICONS = {
+  store: '<path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M3 9h18"/><path d="M9 20v-6h6v6"/>',
+  upload: '<path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/>',
+  grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  list: '<path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>',
+  book: '<path d="M4 19.5A2.5 2.5 0 016.5 17H20V3H6.5A2.5 2.5 0 004 5.5v14z"/><path d="M4 19.5A2.5 2.5 0 006.5 22H20v-5"/>',
+  spark: '<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>',
+  download: '<path d="M12 4v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>',
+  file: '<path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
+  check: '<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.8"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  pause: '<circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/>',
+  xcircle: '<circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/>',
+  users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.5a3.5 3.5 0 010 7"/><path d="M18 14.3c2.1.7 3.5 2.8 3.5 5.7"/>',
+  alert: '<path d="M10.3 3.9L2.4 18a2 2 0 001.7 3h15.8a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/>',
+  block: '<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>',
+  flag: '<path d="M4 21V4"/><path d="M4 4h12l-2 4 2 4H4"/>',
+  pin: '<path d="M12 21s-7-6.2-7-11.5A7 7 0 0119 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+  map: '<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>',
+  send: '<path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>',
+  x: '<path d="M6 6l12 12M18 6L6 18"/>',
+  left: '<path d="M15 18l-6-6 6-6"/>',
+  right: '<path d="M9 18l6-6-6-6"/>',
+  menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
+  refresh: '<path d="M20 11a8 8 0 10-2.3 5.7"/><path d="M20 4v7h-7"/>',
+  table: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/>',
+  shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
+  arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+};
+const ic = (n, cls = "") => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ""}</svg>`;
+
+// ---------------------------------------------------------------- state
+const VIEWS = [
+  { key: "upload", label: "Upload data", icon: "upload", title: "Upload data" },
+  { key: "dashboard", label: "Dashboard", icon: "grid", title: "Decision dashboard", needs: true },
+  { key: "applications", label: "Applications", icon: "list", title: "Applications", needs: true, count: true },
+  { key: "applicant", label: "Applicant profile", icon: "user", title: "Applicant profile", needs: true },
+  { key: "method", label: "How decisions work", icon: "book", title: "How decisions work" },
+];
 const DECISIONS = ["Approved", "Waitlisted", "On hold", "Not approved"];
-let S = { view: "Upload", session: null, original: null, result: null, summary: null, warnings: [], fileName: null,
-          messages: [], changeLog: [], selected: null, filters: { dec: "", ter: "", q: "" } };
-let META = null;
+const DEC_ICON = { Approved: "check", Waitlisted: "clock", "On hold": "pause", "Not approved": "xcircle" };
+const SEV = { blocking: ["block", "Blocking issue"], decision: ["flag", "Decision"], warning: ["alert", "Warning"], info: ["info", "Note"] };
+let S = { view: "upload", session: null, original: null, result: null, summary: null, warnings: [], fileName: null,
+          messages: [], changeLog: [], selected: null, filters: { dec: "", ter: "", q: "" }, sort: { key: "", dir: 1 },
+          tab: "overview", assistant: window.innerWidth > 1280 };
+let META = null, BUSY = false;
 
 // ---------------------------------------------------------------- utilities
 const $ = (id) => document.getElementById(id);
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fmt = (x, d = 1) => (x === null || x === undefined || x === "") ? "–" : (Math.abs(x - Math.round(x)) < 1e-9 ? String(Math.round(x)) : Number(x).toFixed(d));
-const decCls = (d) => "d-" + String(d).replace(/\s+/g, "-");
-const badge = (d) => `<span class="dec ${decCls(d)}">${esc(d)}</span>`;
+const cls = (d) => String(d).replace(/\s+/g, "-");
+const pill = (d, lg) => `<span class="pill ${lg ? "lg " : ""}p-${cls(d)}">${esc(d)}</span>`;
+const initials = (n) => String(n || "?").trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+const hue = (s) => { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
+const records = () => (S.result ? Object.values(S.result.records) : []);
 function md(text) {
   const lines = esc(text).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").split("\n");
   let html = "", list = false;
@@ -130,53 +429,54 @@ function md(text) {
   }
   return html + (list ? "</ul>" : "");
 }
-function save() { try { sessionStorage.setItem("fe_state", JSON.stringify(S)); } catch (e) { /* storage full or blocked */ } }
-function restore() { try { const s = JSON.parse(sessionStorage.getItem("fe_state") || "null"); if (s && s.result) S = Object.assign(S, s); } catch (e) {} }
-function busy(on) { $("busy").style.display = on ? "block" : "none"; document.querySelectorAll("button, #chat-input").forEach((b) => b.disabled = on); }
-function showError(msg) { $("error").innerHTML = msg ? `<div class="err">${esc(msg)}</div>` : ""; }
+function save() { try { sessionStorage.setItem("fe_state_v2", JSON.stringify(S)); } catch (e) { /* storage full or blocked */ } }
+function restore() { try { const s = JSON.parse(sessionStorage.getItem("fe_state_v2") || "null"); if (s) S = Object.assign(S, s); } catch (e) {} }
+function toast(msg, err) { const t = $("toast"); t.textContent = msg; t.className = "toast on" + (err ? " err" : ""); clearTimeout(toast._t); toast._t = setTimeout(() => (t.className = "toast"), 4200); }
+function busy(on) { BUSY = on; $("progress").classList.toggle("on", on); $("send").disabled = on; renderMsgs(); }
 async function api(path, opts = {}) {
   const r = await fetch(path, opts);
   if (!r.ok) { let m = r.statusText; try { const j = await r.json(); m = j.detail || m; } catch (e) {} throw new Error(m); }
   return r;
 }
-async function postJSON(path, body) {
-  return (await api(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })).json();
-}
+const postJSON = async (path, body) => (await api(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })).json();
 const useLLM = () => $("ai").checked;
 const sessionBody = (extra = {}) => Object.assign({}, S.session, { use_llm: useLLM() }, extra);
+function go(view, extra = {}) { Object.assign(S, extra, { view }); closeSide(); render(); window.scrollTo(0, 0); }
 
-// ---------------------------------------------------------------- loading data
+// ---------------------------------------------------------------- data actions
 function applyLoad(j) {
   S.session = j.session; S.original = JSON.parse(JSON.stringify(j.session)); S.result = j.result; S.summary = j.summary;
   S.warnings = j.warnings; S.fileName = j.file_name; S.messages = []; S.changeLog = []; S.selected = null;
-  S.filters = { dec: "", ter: "", q: "" };
-  S.view = j.result && j.summary.applications ? "Results" : "Upload";
+  S.filters = { dec: "", ter: "", q: "" }; S.sort = { key: "", dir: 1 }; S.tab = "overview";
+  S.view = j.summary.applications ? "dashboard" : "upload";
 }
 async function loadSample() {
-  busy(true); showError("");
-  try { applyLoad(await postJSON(`/api/sample?use_llm=${useLLM()}`, {})); } catch (e) { showError(e.message); }
+  busy(true);
+  try { applyLoad(await postJSON(`/api/sample?use_llm=${useLLM()}`, {})); toast("Sample data loaded: 27 applications decided."); }
+  catch (e) { toast(e.message, true); }
   busy(false); render();
 }
 async function loadFile(f) {
   if (!f) return;
-  busy(true); showError("");
+  busy(true);
   try {
     const fd = new FormData(); fd.append("file", f);
     applyLoad(await (await api(`/api/upload?use_llm=${useLLM()}`, { method: "POST", body: fd })).json());
-  } catch (e) { showError(e.message); }
+    toast(`${S.summary.applications} applications decided from ${f.name}.`);
+  } catch (e) { toast(e.message, true); }
   busy(false); render();
 }
 async function rerun() {
   if (!S.session) return;
   busy(true);
   try { const j = await postJSON("/api/run", sessionBody()); S.result = j.result; S.session.signals = j.signals; S.session.use_llm = j.use_llm; }
-  catch (e) { showError(e.message); }
+  catch (e) { toast(e.message, true); }
   busy(false); render();
 }
 async function resetToUpload() {
-  if (!S.original) return;
+  if (!S.original || !S.changeLog.length) { toast("Nothing to reset: no chat updates yet."); return; }
   S.session = JSON.parse(JSON.stringify(S.original)); S.changeLog = [];
-  S.messages.push({ role: "assistant", content: "Reset: all chat updates dropped; decisions are back to the uploaded file." });
+  S.messages.push({ role: "assistant", content: "Reset done: all chat updates were dropped and the decisions are back to the uploaded file." });
   await rerun();
 }
 async function downloadExport() {
@@ -185,31 +485,34 @@ async function downloadExport() {
     const r = await api("/api/export", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(sessionBody({ change_log: S.changeLog })) });
     const blob = await r.blob(); const a = document.createElement("a");
     a.href = URL.createObjectURL(blob); a.download = `franchise_decisions_${S.result.run_date}.xlsx`; a.click(); URL.revokeObjectURL(a.href);
-  } catch (e) { showError(e.message); }
+    toast("Results exported to Excel.");
+  } catch (e) { toast(e.message, true); }
   busy(false);
 }
 
-// ---------------------------------------------------------------- chat
+// ---------------------------------------------------------------- assistant
 async function send(text) {
-  text = (text || "").trim(); if (!text) return;
+  text = (text || "").trim(); if (!text || BUSY) return;
+  openAssistant();
   S.messages.push({ role: "user", content: text });
-  if (!S.result) { S.messages.push({ role: "assistant", content: "Upload a file (or click **Try with sample file**) first." }); render(); return; }
-  renderChat(); busy(true);
+  if (!S.result) { S.messages.push({ role: "assistant", content: "Upload a file or load the sample data first, then ask me about any applicant." }); render(); return; }
+  busy(true);
   try {
     const j = await postJSON("/api/chat", sessionBody({ message: text }));
     S.messages.push({ role: "assistant", content: j.reply });
     if (j.result) {
       S.session.applications = j.applications; S.session.signals = j.signals; S.result = j.result;
       const affected = [...new Set([...(j.targets || []), ...(j.changes || []).map((c) => c.app_id)])];
-      S.changeLog.push({ time: new Date().toLocaleTimeString(), message: text, parsed_by: j.parsed_by, updates: j.updates, affected,
-                         changes: (j.changes || []).filter((c) => c.old !== c.new).map((c) => `${c.app_id}: ${c.old} → ${c.new}`) });
+      const changes = (j.changes || []).filter((c) => c.old !== c.new).map((c) => `${c.app_id}: ${c.old} → ${c.new}`);
+      S.changeLog.push({ time: new Date().toLocaleTimeString(), message: text, parsed_by: j.parsed_by, updates: j.updates, affected, changes });
+      toast(changes.length ? `Re-decided: ${changes.length} decision(s) changed.` : "Updated; no decisions changed.");
     }
-  } catch (e) { S.messages.push({ role: "assistant", content: "Sorry, that failed: " + e.message }); }
+  } catch (e) { S.messages.push({ role: "assistant", content: "Sorry, that request failed: " + e.message }); }
   busy(false); render();
 }
 function examplePrompts() {
   if (!S.result) return ["Why is APP-007 on hold?", "APP-012 has now found a ground-floor space"];
-  const recs = Object.values(S.result.records), out = [];
+  const recs = records(), out = [];
   const hold = recs.find((r) => r.decision === "On hold"); if (hold) out.push(`Why is ${hold.app_id} on hold?`);
   for (const t of S.result.territories) {
     const ranked = recs.filter((r) => r.territory_id === t.territory_id && r.rank).sort((a, b) => a.rank - b.rank);
@@ -223,193 +526,377 @@ function examplePrompts() {
   const appr = recs.find((r) => r.decision === "Approved"); if (appr) out.push(`${appr.app_id} has withdrawn`);
   return out.slice(0, 6);
 }
-function renderChat() {
+function renderMsgs() {
   const box = $("msgs");
-  box.innerHTML = S.messages.length ? S.messages.map((m) => `<div class="msg ${m.role}">${md(m.content)}</div>`).join("")
-    : `<div class="muted">Ask why a decision was made, compare applicants, or give new facts – decisions re-run instantly and knock-on effects are listed.</div>`;
-  box.scrollTop = box.scrollHeight;
-  $("chips").innerHTML = examplePrompts().map((p) => `<button class="chip" data-prompt="${esc(p)}">${esc(p)}</button>`).join("");
-  $("reset").disabled = !S.changeLog.length;
+  let h = "";
+  if (!S.messages.length) {
+    h = `<div class="welcome"><div class="as-ico">${ic("spark")}</div><b>Ask about any decision</b>
+      <p>${S.result ? "Ask why, compare two applicants, or share new facts. Decisions re-run instantly and every knock-on change is listed." : "Load data first, then ask about any applicant."}</p></div>`;
+  }
+  h += S.messages.map((m) => `<div class="msg m-${m.role}">${md(m.content)}</div>`).join("");
+  if (BUSY && S.messages.length && S.messages[S.messages.length - 1].role === "user") h += `<div class="msg m-assistant"><span class="typing"><i></i><i></i><i></i></span></div>`;
+  box.innerHTML = h; box.scrollTop = box.scrollHeight;
+  const sugg = examplePrompts(), compact = S.messages.length > 0;
+  $("sugg").className = "sugg" + (compact ? " compact" : "");
+  $("sugg").innerHTML = (compact ? "" : `<div class="sugg-title">Try asking</div>`) +
+    (compact ? sugg.slice(0, 3) : sugg).map((p) => `<button data-prompt="${esc(p)}">${compact ? "" : ic("arrow")}${esc(p)}</button>`).join("");
+}
+function openAssistant() { S.assistant = true; syncAssistant(); }
+function syncAssistant() {
+  $("assistant").classList.toggle("closed", !S.assistant);
+  $("backdrop").classList.toggle("on", S.assistant && window.innerWidth <= 1280);
+}
+function closeSide() { $("sidebar").classList.remove("open"); if (!S.assistant) $("backdrop").classList.remove("on"); }
+
+// ---------------------------------------------------------------- shell
+function renderShell() {
+  const v = VIEWS.find((x) => x.key === S.view) || VIEWS[0];
+  $("nav").innerHTML = `<div class="nav-label">Workspace</div>` + VIEWS.map((x) => {
+    const dis = x.needs && !S.result;
+    const count = x.count && S.result ? `<span class="count">${records().length}</span>` : "";
+    return `<button class="${x.key === S.view ? "active" : ""}" data-view="${x.key}" ${dis ? "disabled" : ""}>${ic(x.icon)}${x.label}${count}</button>`;
+  }).join("") + `<div class="nav-label">Assistant</div><button data-action="assistant">${ic("spark")}Decision assistant</button>`;
+  $("crumbs").textContent = S.result ? `${S.fileName || "Dataset"} · run ${S.result.run_date}` : "No data loaded";
+  $("title").textContent = S.view === "applicant" && S.result && S.result.records[S.selected] ? `${S.selected} · ${S.result.records[S.selected].name || ""}` : v.title;
+  const ai = META && META.llm_available && useLLM();
+  let a = S.result ? `<span class="chip hide-sm ${ai ? "live" : ""}"><span class="dot"></span>${ai ? "Rules + AI explanations" : "Rules engine"}</span>` : "";
+  if (S.result) a += `<button class="btn sm hide-sm" data-action="export">${ic("download")}Export</button>`;
+  if (S.changeLog.length) a += `<button class="btn sm hide-sm" data-action="reset">${ic("refresh")}Reset updates</button>`;
+  a += `<button class="btn sm ${S.assistant ? "" : "primary"}" data-action="assistant">${ic("spark")}Assistant</button>`;
+  $("top-actions").innerHTML = a;
 }
 
-// ---------------------------------------------------------------- views
-function renderTabs() {
-  $("tabs").innerHTML = VIEWS.map((v) => `<button class="${v === S.view ? "active" : ""}" data-view="${v}">${v}</button>`).join("");
-}
+// ---------------------------------------------------------------- views: upload
 function viewUpload() {
-  let h = `<div class="card"><h2>1 · Upload the applications file</h2>
-    <p class="muted">Use the case template as-is: Sheet 1 Applications, Sheet 2 Territories (Sheet 3 Existing stores is fixed and bundled).</p>
-    <div class="drop" id="drop">📄 Drop the .xlsx file here or <b>click to choose</b></div>
-    <div class="row"><button class="btn primary" id="sample">▶ Try with sample file</button>
-    <a class="btn" href="/api/sample-file" download>⬇ Download sample file</a>
-    <a class="btn" href="/api/template" download>⬇ Download empty template</a></div>
-    <p class="muted">The sample file has 27 test applicants plus an “Expected results” sheet showing the decision each should get and chat messages to try.</p>`;
+  let h = `<div class="stack"><div class="card hero">
+    <div><h2>Start a decision run</h2>
+      <p>Upload the applications workbook in the case template format (Sheet 1 Applications, Sheet 2 Territories). The existing-stores list is fixed and bundled. Every applicant gets a decision, the reasons, next steps and, if approved, an onboarding plan.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn primary" data-action="sample">${ic("table")}Use sample data</button>
+        <a class="btn" href="/api/sample-file" download>${ic("download")}Sample file</a>
+        <a class="btn" href="/api/template" download>${ic("file")}Empty template</a>
+      </div></div>
+    <div class="drop" id="drop" role="button" tabindex="0"><div class="d-ico">${ic("upload")}</div><b>Drop your .xlsx file here</b><span>or click to browse · up to 10 MB</span></div>
+  </div>`;
   if (S.summary) {
     const s = S.summary;
-    h += `<div class="ok"><b>${esc(S.fileName)}</b>: ${s.applications} applications, ${s.territories} territories, ${s.stores} existing stores read
-      (${s.stores_source === "upload" ? "from the file" : "bundled list"}); ${s.rows_with_warnings} row(s) with warnings.</div>`;
-    if (!s.applications) h += `<p class="muted">No applicant rows were found. Fill the Applications sheet from row 4 and upload again.</p>`;
+    h += `<div class="card"><div class="card-h">${ic("check")}<h3>${esc(S.fileName)}</h3><span class="sub">read successfully</span>
+      <div class="right">${S.result && s.applications ? `<button class="btn sm primary" data-view="dashboard">Open dashboard ${ic("arrow")}</button>` : ""}</div></div>
+      <div class="stats"><div><b>${s.applications}</b><span>Applications</span></div><div><b>${s.territories}</b><span>Territories</span></div>
+      <div><b>${s.stores}</b><span>Existing stores (${s.stores_source === "upload" ? "from file" : "bundled"})</span></div><div><b>${S.warnings.length}</b><span>Data warnings</span></div></div>`;
+    if (!s.applications) h += `<div class="card-b muted">No applicant rows were found. Fill the Applications sheet from row 4 and upload again.</div>`;
     if (S.warnings.length) {
-      h += `<details ${S.warnings.length <= 6 ? "open" : ""}><summary>Upload warnings (${S.warnings.length})</summary><div class="table-wrap" style="margin-top:8px"><table>
-        <tr><th>Sheet</th><th>Row</th><th>Message</th></tr>${S.warnings.map((w) => `<tr><td>${esc(w.sheet)}</td><td>${esc(w.row ?? "")}</td><td class="w">${esc(w.message)}</td></tr>`).join("")}</table></div></details>`;
+      h += `<div class="table-wrap" style="border-top:1px solid var(--border)"><table><thead><tr><th>Sheet</th><th>Row</th><th>What we noticed</th></tr></thead><tbody>
+        ${S.warnings.map((w) => `<tr><td>${esc(w.sheet || "–")}</td><td class="mono">${esc(w.row ?? "–")}</td><td class="wrap">${esc(w.message)}</td></tr>`).join("")}</tbody></table></div>`;
     }
-    if (S.result && s.applications) h += `<p><button class="btn" data-view="Results">Go to results →</button></p>`;
+    h += `</div>`;
   }
-  return h + `</div>`;
+  h += `<div class="how">
+    <div class="card"><div class="n">1</div><b>Read and check</b><p>Messy cells are cleaned, the location is checked against the pin code, and contradictions in the notes are flagged.</p></div>
+    <div class="card"><div class="n">2</div><b>Decide with rules</b><p>Three gates, a 100-point score card and one store per pin code. Slots are allocated by rank within each territory.</p></div>
+    <div class="card"><div class="n">3</div><b>Explain and onboard</b><p>Plain-language reasons, exact fixes for on-hold cases, and a dated checklist and training plan for every approval.</p></div>
+  </div></div>`;
+  return h;
 }
-function viewResults() {
-  if (!S.result) return `<div class="card">Upload a file or click <b>Try with sample file</b> on the Upload tab.</div>`;
-  const R = S.result, recs = Object.values(R.records), c = R.counts;
+
+// ---------------------------------------------------------------- views: dashboard
+function viewDashboard() {
+  const R = S.result, recs = records(), c = R.counts, total = recs.length;
+  const pct = (n) => total ? Math.round(100 * n / total) : 0;
   let h = "";
-  if (R.invariant_errors.length) h += `<div class="err">Rule check failed: ${esc(R.invariant_errors.join(" "))}</div>`;
-  h += `<div class="counts">${DECISIONS.map((d) => `<div class="count ${decCls(d)}">${d}<b>${c[d]}</b></div>`).join("")}</div>
-    <p class="muted">Run date ${esc(R.run_date)} · ${S.session.use_llm ? "AI reading of free text" : "keyword rules for free text"} · no two stores in one pin (checked after every run) ✔</p>`;
-  h += `<div class="card"><h3 style="margin-top:0">Territories</h3><div class="table-wrap"><table><tr><th>Territory</th><th>City</th><th>Tier</th><th>Priority</th>
-    <th class="num">Slots</th><th class="num">Applicants</th><th class="num">Approved</th><th class="num">Waitlisted</th><th class="num">On hold</th><th class="num">Not approved</th><th>Pins approved</th><th>Existing-store pins</th></tr>
-    ${R.territories.map((t) => `<tr><td>${esc(t.territory_id)}</td><td>${esc(t.city)}</td><td>${esc(t.tier)}</td><td>${esc(t.priority)}</td><td class="num">${t.slots}</td><td class="num">${t.applicants}</td>
-      <td class="num">${t.approved}</td><td class="num">${t.waitlisted}</td><td class="num">${t.on_hold}</td><td class="num">${t.not_approved}</td><td>${esc(t.pins_used)}</td><td>${esc(t.existing_store_pins)}</td></tr>`).join("")}
-    </table></div></div>`;
-  const f = S.filters, ters = [...new Set(recs.map((r) => r.territory_id || "–"))].sort();
-  const rows = recs.filter((r) => (!f.dec || r.decision === f.dec) && (!f.ter || (r.territory_id || "–") === f.ter) &&
-    (!f.q || [r.app_id, r.name, r.city, r.pin].join(" ").toLowerCase().includes(f.q.toLowerCase())));
-  h += `<div class="card"><h3 style="margin-top:0">Applicants</h3>
-    <div class="filters"><select id="f-dec"><option value="">All decisions</option>${DECISIONS.map((d) => `<option ${f.dec === d ? "selected" : ""}>${d}</option>`).join("")}</select>
-    <select id="f-ter"><option value="">All territories</option>${ters.map((t) => `<option ${f.ter === t ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>
-    <input type="text" id="f-q" placeholder="Search ID, name, city or pin" value="${esc(f.q)}"></div>
-    <p class="muted">Click a row to open the applicant's full explanation.</p>
-    <div class="table-wrap"><table><tr><th>ID</th><th>Name</th><th>City</th><th>Pin</th><th>Territory</th><th class="num">Required ₹L</th><th class="num">Offered ₹L</th>
-    <th class="num">Ratio</th><th class="num">Score</th><th>Rank</th><th>Decision</th><th>Why (one line)</th></tr>
-    ${rows.map((r) => `<tr class="click" data-app="${esc(r.app_id)}"><td>${esc(r.app_id)}</td><td>${esc(r.name)}</td><td>${esc(r.city)}</td><td>${esc(r.pin)}</td>
-      <td>${esc(r.territory_id || "–")}</td><td class="num">${fmt(r.required_lakh)}</td><td class="num">${fmt(r.offered_lakh)}</td><td class="num">${r.ratio == null ? "–" : Number(r.ratio).toFixed(2)}</td>
-      <td class="num">${fmt(r.score)}</td><td>${esc(r.rank_text || "")}</td><td>${badge(r.decision)}</td><td class="w">${esc(r.headline)}</td></tr>`).join("")}
-    </table></div>
-    <p><button class="btn" id="export">⬇ Download results (Excel)</button></p>`;
-  if (S.changeLog.length) {
-    h += `<details><summary>Change log (${S.changeLog.length} chat update(s))</summary>${S.changeLog.slice().reverse().map((e) =>
-      `<p><b>${esc(e.time)}</b> – “${esc(e.message)}” (${esc(e.parsed_by)})<br>Applied: ${esc(e.updates.join("; "))}<br>Decision changes: ${esc(e.changes.join(", ") || "none")}</p>`).join("")}</details>`;
+  if (R.invariant_errors.length) h += `<div class="card card-b" style="border-color:var(--no-bd);margin-bottom:16px">${ic("alert")} Rule check failed: ${esc(R.invariant_errors.join(" "))}</div>`;
+  h += `<div class="kpis"><button class="card kpi" data-filter="">
+      <div class="k-top"><span class="k-ico ico-all">${ic("users")}</span>Applications</div><div class="k-val">${total}</div><div class="k-sub">${R.territories.length} territories</div></button>`;
+  for (const d of DECISIONS) {
+    h += `<button class="card kpi" data-filter="${d}"><div class="k-top"><span class="k-ico ico-${cls(d)}">${ic(DEC_ICON[d])}</span>${d}</div>
+      <div class="k-val">${c[d]}</div><div class="k-sub">${pct(c[d])}% of applications</div></button>`;
   }
-  return h + `</div>`;
+  h += `</div>`;
+  // territory capacity: full width so cards sit side by side even with the assistant docked
+  h += `<div class="card" style="margin-bottom:16px"><div class="card-h"><h3>Territory capacity</h3><span class="sub">slots filled by approvals</span>
+      <div class="right hide-sm"><span class="chip">${ic("shield")}No two stores in one pin · checked</span></div></div><div class="card-b"><div class="ters">`;
+  for (const t of R.territories) {
+    const pctFill = t.slots ? Math.min(100, 100 * t.approved / t.slots) : 0;
+    h += `<div class="ter" data-ter="${esc(t.territory_id)}"><div class="t-h"><b class="mono">${esc(t.territory_id)}</b><span class="tag ${esc(t.priority)}">${esc(t.priority)}</span><span class="tag">${esc(t.tier)}</span></div>
+      <div class="t-city">${ic("pin")} ${esc(t.city || "–")}</div>
+      <div class="t-slots"><span>${t.slots ? `${t.approved} of ${t.slots} slots filled` : "No open slots"}</span><span>${t.slots ? Math.round(pctFill) + "%" : ""}</span></div>
+      <div class="bar"><i style="width:${pctFill}%;background:${pctFill >= 100 ? "#17b26a" : "var(--brand)"}"></i></div>
+      <div class="t-row"><span>${t.applicants} applicants</span><span>${t.waitlisted} waitlisted · ${t.on_hold} on hold</span></div></div>`;
+  }
+  h += `</div></div></div><div class="grid g-2"><div class="card">`;
+  const holds = recs.filter((r) => r.decision === "On hold");
+  h += `<div class="card-h">${ic("pause")}<h3>Needs follow-up</h3><span class="sub">${holds.length} on hold</span>
+      ${holds.length ? `<div class="right"><button class="btn sm ghost" data-filter="On hold">View all</button></div>` : ""}</div>`;
+  if (holds.length) {
+    h += `<ul class="todo">${holds.slice(0, 6).map((r) => {
+      const fix = (r.reasons.find((x) => x.severity === "blocking" && x.fix) || {}).fix || r.headline;
+      return `<li data-app="${esc(r.app_id)}"><span class="t-ico">${ic("flag")}</span><div><span class="t-id mono">${esc(r.app_id)}</span> <span class="muted">· ${esc(r.name || "")}</span><div class="t-fix">${esc(fix)}</div></div></li>`;
+    }).join("")}</ul>`;
+  } else h += `<div class="empty">${ic("check")}<div>Nothing waiting on applicants.</div></div>`;
+  h += `</div><div class="stack"><div class="card"><div class="card-h"><h3>Decision mix</h3><span class="sub">${total} applications</span></div><div class="card-b">
+      <div class="mix">${DECISIONS.filter((d) => c[d]).map((d) => `<i class="bg-${cls(d)}" style="width:${100 * c[d] / Math.max(total, 1)}%" title="${d}: ${c[d]}"></i>`).join("")}</div>
+      <div class="legend">${DECISIONS.map((d) => `<span><i class="sw bg-${cls(d)}"></i>${d} <b>${c[d]}</b></span>`).join("")}</div></div></div>`;
+  const recent = S.changeLog.slice(-4).reverse();
+  h += `<div class="card"><div class="card-h">${ic("refresh")}<h3>Recent updates</h3><span class="sub">from the assistant</span></div>`;
+  h += recent.length ? `<ul class="todo">${recent.map((e) => `<li><span class="t-ico">${ic("spark")}</span><div><div class="t-fix">“${esc(e.message)}”</div><div class="muted" style="font-size:12px">${esc(e.time)} · ${esc(e.changes.join(", ") || "no decision changes")}</div></div></li>`).join("")}</ul>`
+    : `<div class="card-b muted">No updates yet. Share new facts in the assistant (for example, “APP-012 has now found a ground-floor space”) and the engine re-decides every applicant.</div>`;
+  h += `</div></div></div>`;
+  return h;
 }
+
+// ---------------------------------------------------------------- views: applications
+const SORTS = {
+  id: (r) => r.app_id, name: (r) => (r.name || "").toLowerCase(), ter: (r) => r.territory_id || "~",
+  inv: (r) => r.offered_lakh ?? -1, ratio: (r) => r.ratio ?? -1, score: (r) => r.score ?? -1,
+  dec: (r) => DECISIONS.indexOf(r.decision), rank: (r) => (r.territory_id || "~") + String(r.rank || 999).padStart(3, "0"),
+};
+function filtered() {
+  const f = S.filters;
+  let rows = records().filter((r) => (!f.dec || r.decision === f.dec) && (!f.ter || (r.territory_id || "–") === f.ter) &&
+    (!f.q || [r.app_id, r.name, r.city, r.pin, r.territory_id].join(" ").toLowerCase().includes(f.q.toLowerCase())));
+  if (S.sort.key) { const k = SORTS[S.sort.key]; rows = rows.slice().sort((a, b) => (k(a) > k(b) ? 1 : k(a) < k(b) ? -1 : 0) * S.sort.dir); }
+  return rows;
+}
+function th(label, key, extra = "") {
+  const on = S.sort.key === key;
+  return `<th class="sort ${on ? "sorted" : ""} ${extra}" data-sort="${key}">${label}<span class="arr">${on ? (S.sort.dir > 0 ? "↑" : "↓") : "↕"}</span></th>`;
+}
+function viewApplications() {
+  const recs = records(), f = S.filters, rows = filtered();
+  const ters = [...new Set(recs.map((r) => r.territory_id || "–"))].sort();
+  const count = (d) => recs.filter((r) => !d || r.decision === d).length;
+  let h = `<div class="card"><div class="toolbar">
+    <div class="seg">${["", ...DECISIONS].map((d) => `<button class="${f.dec === d ? "on" : ""}" data-filter="${d}">${d || "All"} <span class="n">${count(d)}</span></button>`).join("")}</div>
+    <select class="input" id="f-ter" aria-label="Territory"><option value="">All territories</option>${ters.map((t) => `<option ${f.ter === t ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>
+    <div class="search">${ic("search")}<input class="input" id="f-q" placeholder="Search ID, name, city, pin" value="${esc(f.q)}" aria-label="Search"></div>
+    <div style="margin-left:auto"><button class="btn sm" data-action="export">${ic("download")}Export Excel</button></div></div>`;
+  if (!rows.length) return h + `<div class="empty">${ic("search")}<div>No applicants match these filters.</div></div></div>`;
+  h += `<div class="table-wrap"><table><thead><tr>${th("ID", "id")}${th("Applicant", "name")}${th("Decision", "dec")}${th("Territory", "ter")}${th("Investment", "ratio", "num")}
+    ${th("Score", "score")}${th("Rank", "rank")}<th>Reason</th></tr></thead><tbody>`;
+  for (const r of rows) {
+    const rc = r.ratio == null ? "" : r.ratio >= 1 ? "ratio-ok" : r.ratio >= 0.8 ? "ratio-mid" : "ratio-low";
+    h += `<tr class="click" data-app="${esc(r.app_id)}"><td class="mono">${esc(r.app_id)}</td>
+      <td class="who"><b>${esc(r.name || "–")}</b><span>${esc(r.city || "–")} · ${esc(r.pin || "–")}</span></td>
+      <td>${pill(r.decision)}</td>
+      <td>${r.territory_id ? `<span class="mono">${esc(r.territory_id)}</span>` : '<span class="faint">none</span>'}</td>
+      <td class="num money">${r.offered_lakh != null ? `<b>₹${fmt(r.offered_lakh)}L</b> <span class="${rc}">${r.ratio == null ? "" : Number(r.ratio).toFixed(2) + "×"}</span>` : "–"}<br><span>${r.required_lakh != null ? `needs ₹${fmt(r.required_lakh)}L` : ""}</span></td>
+      <td>${r.score == null ? '<span class="faint">not scored</span>' : `<div class="scorecell"><div class="bar"><i style="width:${r.score}%"></i></div><b>${fmt(r.score)}</b></div>`}</td>
+      <td>${esc(r.rank_text ? `${r.rank} of ${r.rank_of}` : "–")}</td>
+      <td class="wrap"><div class="clamp" title="${esc(r.headline)}">${esc(r.headline)}</div></td></tr>`;
+  }
+  h += `</tbody></table></div><div class="tfoot">Showing ${rows.length} of ${recs.length} applicants · click a row for the full profile</div></div>`;
+  return h;
+}
+
+// ---------------------------------------------------------------- views: applicant
 function viewApplicant() {
-  if (!S.result) return `<div class="card">Upload a file first.</div>`;
-  const recs = S.result.records, ids = Object.keys(recs);
-  if (!recs[S.selected]) S.selected = ids[0];
-  const r = recs[S.selected];
-  let h = `<div class="card"><select id="pick" style="max-width:100%">${ids.map((i) => `<option value="${esc(i)}" ${i === r.app_id ? "selected" : ""}>${esc(i)} · ${esc(recs[i].name)} · ${esc(recs[i].decision)}</option>`).join("")}</select>
-    <h2 style="margin-top:12px">${esc(r.app_id)} · ${esc(r.name || "")} ${badge(r.decision)}</h2><p><b>${esc(r.headline)}</b></p><div class="facts">`;
-  h += `<span class="fact">📍 ${esc(r.city || "?")} · pin ${esc(r.pin || "?")}</span>`;
-  h += `<span class="fact">🗺 ${r.territory_id ? `${esc(r.territory_id)} (${esc(r.tier)}, ${esc(r.priority)} priority, ${r.slots} slot(s))` : "no territory"}</span>`;
-  if (r.required_lakh) h += `<span class="fact">💰 needs ₹${fmt(r.required_lakh)} L, offers ₹${fmt(r.offered_lakh)} L${r.ratio != null ? ` (ratio ${Number(r.ratio).toFixed(2)})` : ""}</span>`;
-  if (r.payback_months) h += `<span class="fact">⏱ payback ≈ ${fmt(r.payback_months)} months (assumption-based)</span>`;
-  if (r.nearest_store) h += `<span class="fact">🏬 nearest store ${esc(r.nearest_store.store_id)} (${esc(r.nearest_store.city)}) ${fmt(r.nearest_store.km)} km${r.nearest_store.exact ? "" : " (approx.)"}</span>`;
-  h += `</div><h3>Why</h3><div class="reasons">${r.reasons.map((x) => `<div>${SEV[x.severity] || "•"} ${esc(x.sentence)}</div>`).join("")}</div>`;
-  if (r.score_breakdown) {
-    h += `<h3>Score: ${fmt(r.score)} / 100</h3><div class="table-wrap"><table><tr><th>Factor</th><th>Input</th><th class="num">Points</th><th></th><th>Why</th></tr>
-      ${r.score_breakdown.map((b) => `<tr><td>${esc(b.label)}</td><td>${esc(b.input)}</td><td class="num">${fmt(b.points)} / ${b.max}</td>
-      <td><div class="bar"><i style="width:${Math.round(100 * b.points / b.max)}%"></i></div></td><td class="w">${esc(b.why)}</td></tr>`).join("")}</table></div>`;
+  const recs = S.result.records, ids = filtered().map((r) => r.app_id);
+  const all = Object.keys(recs);
+  if (!recs[S.selected]) S.selected = all[0];
+  const r = recs[S.selected], pos = ids.indexOf(r.app_id);
+  const prev = pos > 0 ? ids[pos - 1] : null, next = pos >= 0 && pos < ids.length - 1 ? ids[pos + 1] : null;
+  const tabs = [["overview", "Overview"], ["score", "Score"], ["competition", "Competition"]];
+  if (r.checklist) tabs.push(["onboarding", "Onboarding plan"], ["training", "Training"]);
+  tabs.push(["data", "Application data"], ["history", `History${(r.change_log || []).length || logFor(r).length ? ` (${logFor(r).length})` : ""}`]);
+  if (!tabs.some((t) => t[0] === S.tab)) S.tab = "overview";
+  const tr = r.target_launch ? `${fmt(r.target_launch)} → ${r.readiness_months} mo` : `${r.readiness_months} mo realistic`;
+  let h = `<div style="margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <button class="btn sm ghost" data-view="applications">${ic("left")}All applications</button>
+    <select class="input" id="pick" aria-label="Choose applicant" style="max-width:280px">${all.map((i) => `<option value="${esc(i)}" ${i === r.app_id ? "selected" : ""}>${esc(i)} · ${esc(recs[i].name)}</option>`).join("")}</select></div>
+  <div class="card"><div class="profile">
+    <div class="avatar" style="background:hsl(${hue(r.app_id)} 55% 45%)">${esc(initials(r.name))}</div>
+    <div style="min-width:0;flex:1"><h2>${esc(r.name || r.app_id)} ${pill(r.decision, true)}</h2>
+      <div class="meta"><span class="mono">${esc(r.app_id)}</span><span>${ic("pin")}${esc(r.city || "?")} · ${esc(r.pin || "?")}</span>
+        <span>${ic("map")}${r.territory_id ? `${esc(r.territory_id)} · ${esc(r.tier)} · <span class="tag ${esc(r.priority)}">${esc(r.priority)}</span>` : "No territory"}</span></div>
+      <div class="headline">${esc(r.headline)}</div></div>
+    <div class="p-nav"><button class="btn icon sm" ${prev ? `data-app="${esc(prev)}"` : "disabled"} aria-label="Previous applicant">${ic("left")}</button>
+      <button class="btn icon sm" ${next ? `data-app="${esc(next)}"` : "disabled"} aria-label="Next applicant">${ic("right")}</button></div>
+  </div><div class="metrics">
+    <div class="metric"><div class="m-l">Score</div><div class="m-v">${r.score == null ? "–" : fmt(r.score) + "<span class='muted' style='font-size:13px'>/100</span>"}</div><div class="m-s">${esc(r.rank_text || "not ranked")}</div></div>
+    <div class="metric"><div class="m-l">Investment</div><div class="m-v">${r.offered_lakh == null ? "–" : "₹" + fmt(r.offered_lakh) + "L"}</div><div class="m-s">${r.required_lakh ? `needs ₹${fmt(r.required_lakh)}L · ${r.ratio == null ? "–" : Number(r.ratio).toFixed(2) + "×"}` : ""}</div></div>
+    <div class="metric"><div class="m-l">Payback</div><div class="m-v">${r.payback_months ? "~" + fmt(r.payback_months) + " mo" : "–"}</div><div class="m-s">assumption-based</div></div>
+    <div class="metric"><div class="m-l">Nearest store</div><div class="m-v">${r.nearest_store ? fmt(r.nearest_store.km) + " km" : "–"}</div><div class="m-s">${r.nearest_store ? esc(r.nearest_store.store_id + " · " + r.nearest_store.city) + (r.nearest_store.exact ? "" : " (approx.)") : ""}</div></div>
+    <div class="metric"><div class="m-l">Launch</div><div class="m-v">${esc(tr)}</div><div class="m-s">target → realistic</div></div>
+  </div>
+  <div class="tabs" role="tablist">${tabs.map(([k, l]) => `<button role="tab" class="${S.tab === k ? "on" : ""}" data-tab="${k}">${l}</button>`).join("")}</div>
+  <div class="card-b">${detailTab(r)}</div></div>`;
+  return h;
+}
+const logFor = (r) => S.changeLog.filter((e) => e.affected.includes(r.app_id));
+function detailTab(r) {
+  const recs = S.result.records;
+  if (S.tab === "overview") {
+    const groups = ["blocking", "decision", "warning", "info"];
+    let h = `<div class="grid g-2"><div><div class="sec-title">Why this decision</div><ul class="reasons">`;
+    for (const g of groups) for (const x of r.reasons.filter((x) => x.severity === g)) h += `<li class="r-${g}" title="${SEV[g][1]}">${ic(SEV[g][0])}<span>${esc(x.sentence)}</span></li>`;
+    h += `</ul></div><div><div class="sec-title">Next steps</div><ol class="steps-list">${r.next_steps.map((n) => `<li>${esc(n)}</li>`).join("")}</ol>`;
+    if (r.summary_line) h += `<div class="callout">${ic("info")}<span>${esc(r.summary_line)}</span></div>`;
+    return h + `</div></div>`;
   }
-  if (r.territory_id) {
+  if (S.tab === "score") {
+    if (!r.score_breakdown) return `<div class="empty">${ic("info")}<div>Only applicants who pass all checks are scored. ${esc(r.decision === "On hold" && r.prediction ? r.prediction.text : "")}</div></div>`;
+    return `<div class="table-wrap"><table><thead><tr><th>Factor</th><th>Input</th><th style="width:28%">Points</th><th>Why</th></tr></thead><tbody>
+      ${r.score_breakdown.map((b) => `<tr><td><b style="color:var(--text)">${esc(b.label)}</b></td><td>${esc(b.input)}</td>
+      <td><div class="scorecell"><div class="bar"><i style="width:${Math.round(100 * b.points / b.max)}%"></i></div><b>${fmt(b.points)}</b><span class="faint">/${b.max}</span></div></td><td class="wrap">${esc(b.why)}</td></tr>`).join("")}
+      <tr><td><b style="color:var(--text)">Total</b></td><td></td><td><b style="color:var(--text)">${fmt(r.score)} / 100</b></td><td class="wrap muted">Tie-break: score, investment ratio, experience, time to open, Application ID.</td></tr></tbody></table></div>`;
+  }
+  if (S.tab === "competition") {
+    if (!r.territory_id) return `<div class="empty">${ic("map")}<div>This pin code is not in any territory, so there is no competition to show.</div></div>`;
     const comp = Object.values(recs).filter((x) => x.territory_id === r.territory_id).sort((a, b) => (a.rank || 999) - (b.rank || 999) || a.app_id.localeCompare(b.app_id));
-    h += `<h3>Rank and competitors in ${esc(r.territory_id)}${r.rank_text ? " — " + esc(r.rank_text) : ""}</h3><div class="table-wrap"><table>
-      <tr><th>Rank</th><th>ID</th><th>Name</th><th>Pin</th><th class="num">Score</th><th>Decision</th></tr>
-      ${comp.map((x) => `<tr class="click" data-app="${esc(x.app_id)}"><td>${x.rank || "–"}</td><td>${esc(x.app_id)}</td><td>${esc(x.name)}</td><td>${esc(x.pin)}</td>
-      <td class="num">${fmt(x.score)}</td><td>${badge(x.decision)}</td></tr>`).join("")}</table></div>`;
+    const t = S.result.territories.find((x) => x.territory_id === r.territory_id) || {};
+    return `<div class="facts" style="margin-bottom:14px"><div class="fact"><div class="f-l">Territory</div><div class="f-v">${esc(r.territory_id)} · ${esc(t.city || "")}</div></div>
+      <div class="fact"><div class="f-l">Open slots</div><div class="f-v">${t.slots ?? "–"} (${t.approved ?? 0} filled)</div></div>
+      <div class="fact"><div class="f-l">Existing-store pins</div><div class="f-v">${esc(t.existing_store_pins || "none")}</div></div>
+      <div class="fact"><div class="f-l">Pins approved</div><div class="f-v">${esc(t.pins_used || "none")}</div></div></div>
+      <div class="table-wrap"><table><thead><tr><th>Rank</th><th>Applicant</th><th>Pin</th><th>Score</th><th>Decision</th></tr></thead><tbody>
+      ${comp.map((x) => `<tr class="click" data-app="${esc(x.app_id)}" ${x.app_id === r.app_id ? 'style="outline:2px solid var(--brand);outline-offset:-2px"' : ""}><td>${x.rank || "–"}</td>
+      <td class="who"><b>${esc(x.app_id)} · ${esc(x.name || "")}</b></td><td class="mono">${esc(x.pin)}</td>
+      <td>${x.score == null ? '<span class="faint">not scored</span>' : `<div class="scorecell"><div class="bar"><i style="width:${x.score}%"></i></div><b>${fmt(x.score)}</b></div>`}</td><td>${pill(x.decision)}</td></tr>`).join("")}</tbody></table></div>`;
   }
-  h += `<h3>Next steps</h3><ul>${r.next_steps.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>`;
-  if (r.checklist) {
+  if (S.tab === "onboarding" && r.checklist) {
     const ck = r.checklist;
-    h += `<h3>Onboarding checklist — opening ${esc(ck.planned_opening_text)} ${ck.fast_track ? '<span class="dec d-On-hold">Fast-track onboarding</span>' : ""}</h3>
-      <p class="muted">Scheduled ${esc(ck.plan.scheduled)} · ${esc(ck.space)} space · ${ck.staff} staff${ck.plan.gap ? " · " + esc(ck.plan.gap) : ""}</p>
-      <div class="table-wrap"><table><tr><th>#</th><th>Task</th><th>When</th><th>Dates</th><th>Done when</th><th>Detail</th></tr>
-      ${ck.steps.map((s) => `<tr><td>${s.step}</td><td class="w">${esc(s.name)}</td><td>${esc(s.timing)}</td><td>${esc(s.dates)}</td><td>${esc(s.done_when)}</td><td class="w">${esc(s.detail)}</td></tr>`).join("")}</table></div>`;
+    return `<div class="facts" style="margin-bottom:16px"><div class="fact"><div class="f-l">Planned opening</div><div class="f-v">${esc(ck.planned_opening_text)}</div></div>
+      <div class="fact"><div class="f-l">Schedule</div><div class="f-v">${esc(ck.plan.scheduled)}</div></div>
+      <div class="fact"><div class="f-l">Space · staff</div><div class="f-v">${esc(ck.space)} · ${ck.staff} staff</div></div>
+      <div class="fact"><div class="f-l">Track</div><div class="f-v">${ck.fast_track ? "Fast-track (High priority)" : "Standard onboarding"}</div></div></div>
+      ${ck.plan.gap ? `<div class="callout" style="margin-bottom:16px">${ic("clock")}<span>${esc(ck.plan.gap)}</span></div>` : ""}
+      <ol class="timeline">${ck.steps.map((s) => `<li class="${s.key === "launch" ? "launch" : ""}"><span class="dot"></span>
+        <div class="t-top"><b>${esc(s.name)}</b><span class="t-when">${esc(s.dates)}</span><span class="faint">${esc(s.timing)}</span></div>
+        ${s.detail ? `<div class="t-det">${esc(s.detail)}</div>` : ""}<div class="t-done">Done when: ${esc(s.done_when)}</div></li>`).join("")}</ol>`;
   }
-  if (r.training) {
+  if (S.tab === "training" && r.training) {
     const t = r.training;
-    h += `<h3>Training plan — ${esc(t.track_label || t.track)} in ${esc(t.language)}</h3>
-      <p><b>${esc(t.duration_text)}</b> (${esc(t.why)})${t.window ? ", " + esc(t.window) : ""}. ${esc(t.format)}</p>
-      <p>Modules: ${t.modules.map(esc).join(" · ")}</p><p class="muted">${esc(t.staff_training)}</p>`;
+    return `<div class="facts" style="margin-bottom:16px"><div class="fact"><div class="f-l">Track</div><div class="f-v">${esc(t.track_label || t.track)}</div></div>
+      <div class="fact"><div class="f-l">Language</div><div class="f-v">${esc(t.language)}</div></div>
+      <div class="fact"><div class="f-l">Duration</div><div class="f-v">${esc(t.duration_text)}</div></div>
+      <div class="fact"><div class="f-l">When</div><div class="f-v">${esc(t.window || "–")}</div></div></div>
+      <div class="sec-title">Why this track</div><p style="margin:0 0 12px">${esc(t.why)}. ${esc(t.format)}</p>
+      <div class="sec-title">Modules</div><div class="modules">${t.modules.map((m) => `<span class="chip">${esc(m)}</span>`).join("")}</div>
+      ${t.shadow_store ? `<div class="sec-title">Shadowing store</div><p style="margin:0">${esc(t.shadow_store.text)}</p>` : ""}
+      <div class="sec-title">Store staff</div><p style="margin:0">${esc(t.staff_training)}</p>`;
   }
-  if (r.summary_line) h += `<div class="note">${esc(r.summary_line)}</div>`;
-  const sg = r.signals || {}, nice = (v) => esc(String(v || "").replace(/_/g, " "));
-  h += `<details><summary>Application as uploaded, and what was read from the free text</summary><div class="table-wrap" style="margin-top:8px"><table>
-    ${Object.entries(r.inputs).map(([k, v]) => `<tr><th>${esc(k)}</th><td class="w">${esc(v ?? "")}</td></tr>`).join("")}</table></div>
-    <p>Free-text reading (${esc(sg.source)}): business = <b>${nice(sg.business_type)}</b>, funding = <b>${nice(sg.funding_status)}</b>,
-    space = <b>${nice(sg.space_claims)}</b>, floor = <b>${nice(sg.floor_claim)}</b>${sg.deadline_text ? `, deadline = <i>${esc(sg.deadline_text)}</i>` : ""}. ${esc(sg.summary || "")}</p>`;
-  if (r.required_lakh) {
-    const p = r.cost_parts_lakh;
-    h += `<p>Cost model (${esc(r.tier)}, ${fmt(r.size_for_costing)} sq ft${r.size_known ? "" : " assumed"}, ${esc(String(r.costing_space).toLowerCase())}):
-      fee ${fmt(p.franchise_fee, 2)} + fit-out ${fmt(p.fitout, 2)} + inventory ${fmt(p.inventory, 2)} + working capital ${fmt(p.working_capital, 2)} + rent deposit ${fmt(p.rent_deposit, 2)} = <b>₹${fmt(r.required_lakh)} lakh</b>.</p>`;
+  if (S.tab === "data") {
+    const sg = r.signals || {}, nice = (v) => esc(String(v || "–").replace(/_/g, " "));
+    let h = `<div class="grid g-2"><div><div class="sec-title">As uploaded</div><div class="kv">${Object.entries(r.inputs).map(([k, v]) => `<div class="k">${esc(k)}</div><div class="v">${esc(v ?? "–") || "–"}</div>`).join("")}</div></div>
+      <div><div class="sec-title">Read from the free text (${esc(sg.source || "")})</div><div class="kv">
+        <div class="k">Business type</div><div class="v">${nice(sg.business_type)}</div><div class="k">Funding</div><div class="v">${nice(sg.funding_status)}${sg.funding_evidence ? ` · “${esc(sg.funding_evidence)}”` : ""}</div>
+        <div class="k">Space claims</div><div class="v">${nice(sg.space_claims)}${sg.space_evidence ? ` · “${esc(sg.space_evidence)}”` : ""}</div><div class="k">Floor claim</div><div class="v">${nice(sg.floor_claim)}</div>
+        <div class="k">Deadline</div><div class="v">${esc(sg.deadline_text || "–")}</div></div>`;
+    if (r.required_lakh) {
+      const p = r.cost_parts_lakh;
+      h += `<div class="sec-title">Cost to open (${esc(r.tier)}, ${fmt(r.size_for_costing)} sq ft${r.size_known ? "" : " assumed"}, ${esc(String(r.costing_space).toLowerCase())})</div><div class="kv">
+        <div class="k">Franchise fee</div><div class="v">₹${fmt(p.franchise_fee, 2)} L</div><div class="k">Fit-out</div><div class="v">₹${fmt(p.fitout, 2)} L</div>
+        <div class="k">Initial inventory</div><div class="v">₹${fmt(p.inventory, 2)} L</div><div class="k">Working capital</div><div class="v">₹${fmt(p.working_capital, 2)} L</div>
+        <div class="k">Rent deposit</div><div class="v">₹${fmt(p.rent_deposit, 2)} L</div><div class="k"><b>Total required</b></div><div class="v"><b>₹${fmt(r.required_lakh)} lakh</b></div></div>`;
+    }
+    return h + `</div></div>`;
   }
-  h += `</details><h3>Change history</h3>`;
-  const log = S.changeLog.filter((e) => e.affected.includes(r.app_id));
-  h += log.length ? `<ul>${log.map((e) => `<li>${esc(e.time)} – “${esc(e.message)}” → ${esc(e.updates.join("; "))}</li>`).join("")}</ul>` : `<p class="muted">No chat updates affected this applicant.</p>`;
-  return h + `</div>`;
+  if (S.tab === "history") {
+    const log = logFor(r);
+    return log.length ? `<ol class="timeline">${log.map((e) => `<li><span class="dot"></span><div class="t-top"><b>“${esc(e.message)}”</b><span class="t-when">${esc(e.time)}</span></div>
+      <div class="t-det">Applied: ${esc(e.updates.join("; "))}</div><div class="t-done">Decision changes: ${esc(e.changes.join(", ") || "none")}</div></li>`).join("")}</ol>`
+      : `<div class="empty">${ic("clock")}<div>No chat updates have affected this applicant.</div></div>`;
+  }
+  return "";
 }
+
+// ---------------------------------------------------------------- views: methodology
 function viewMethod() {
-  if (!META) return `<div class="card">Loading…</div>`;
-  const w = META.score_weights, a = META.adequacy;
-  const tiers = Object.keys(META.cost_model);
-  return `<div class="card"><h2>How decisions are made</h2>
-  <p><b>Rules decide, AI explains.</b> Every decision comes from fixed rules and a score card (same input → same output). The AI only reads messy free text into fixed fields and phrases answers; without it, keyword rules and templates do the same job.</p>
-  <ol><li><b>Gate A – data:</b> missing required fields, invalid pin, city/pin or city/state mismatch, contradictions → <b>On hold</b> with the exact fix.</li>
-  <li><b>Gate B – location:</b> pin in no territory, or pin already has a brand store → <b>Not approved</b> (alternatives offered).</li>
-  <li><b>Gate C – readiness:</b> funds &lt; ${Math.round(a.not_approved_below * 100)}% of the store's cost → <b>Not approved</b>; ${Math.round(a.not_approved_below * 100)}–100% → <b>On hold</b>; no space, upper floor (non-mall), &lt; ${META.min_size_sqft} sq ft, or funding not confirmed → <b>On hold</b>.</li>
-  <li><b>Score</b> (100 points), then <b>allocate</b> per territory: walk the ranking; pin already won → Waitlisted; slots full → Waitlisted; else Approved.</li></ol>
-  <h3>Cost to open a store (team assumptions, scaled from public Lenskart figures)</h3>
-  <div class="table-wrap"><table><tr><th>Tier</th><th class="num">Franchise fee ₹L</th><th class="num">Fit-out ₹/sq ft</th><th class="num">Inventory ₹L</th><th class="num">Working capital ₹L</th><th class="num">Rent ₹/sq ft/month</th><th class="num">Revenue ₹/sq ft/month</th></tr>
-  ${tiers.map((t) => { const c = META.cost_model[t]; return `<tr><td>${t}</td><td class="num">${fmt(c.franchise_fee / 1e5)}</td><td class="num">${c.fitout_per_sqft}</td><td class="num">${fmt(c.inventory / 1e5)}</td><td class="num">${fmt(c.working_capital / 1e5)}</td><td class="num">${c.rent_per_sqft_month}</td><td class="num">${META.revenue_model[t].revenue_per_sqft_month}</td></tr>`; }).join("")}</table></div>
-  <p class="muted">Rent deposit = ${META.rent_deposit_months} months' rent (rented spaces only). Net margin ${Math.round(META.net_margin * 100)}% for payback.</p>
-  <p>Worked examples: ${META.worked_examples.map((e) => `${e.tier}, ${e.size} sq ft ${e.space.toLowerCase()} = <b>₹${fmt(e.required_lakh)} L</b>`).join(" · ")}</p>
-  <h3>Score card</h3>
-  <p>Investment adequacy ${w.investment_adequacy} (ratio 1.0 → ${a.base_points_at_1}, linear to ${w.investment_adequacy} at ${a.full_points_at}×) · retail experience ${w.retail_experience} · business background ${w.business_background} · space quality ${w.space_quality} · territory priority ${w.territory_priority} · location &amp; cannibalisation ${w.location} (&gt; 3 km = 15, 1.5–3 km = 8, &lt; 1.5 km = 0) · timeline fit ${w.timeline_fit} · payback ${w.payback} (≤ 18 months = 5, 18–30 = 3).</p>
-  <p><b>Tie-break:</b> higher score → higher investment adequacy → more retail experience → shorter time to open → lower Application ID.</p>
-  <p><b>Onboarding:</b> checklist scheduled backwards from the target launch (forwards from today if the target is unrealistic); High-priority territories are fast-tracked. Training track by experience (0 yrs Foundation 10 days + 2 weeks shadowing, 1–5 yrs Standard 6 days + 1 week, 6+ yrs Fast track 3 days) in the applicant's language, shadowing at the nearest existing store.</p>
-  <p class="muted">Distances use Department of Posts pin-code coordinates (data.gov.in, Government Open Data Licence).</p></div>`;
+  if (!META) return `<div class="card card-b">Loading…</div>`;
+  const w = META.score_weights, a = META.adequacy, tiers = Object.keys(META.cost_model), totalW = Object.values(w).reduce((x, y) => x + y, 0);
+  const labels = { investment_adequacy: "Investment adequacy", retail_experience: "Retail experience", business_background: "Business background", space_quality: "Space quality",
+                   territory_priority: "Territory priority", location: "Location & cannibalisation", timeline_fit: "Timeline fit", payback: "Payback" };
+  return `<div class="stack">
+  <div class="callout">${ic("shield")}<span><b>Rules decide, AI explains.</b> Every decision comes from fixed rules and a score card, so the same input always gives the same output. AI is used only to read messy free text into fixed fields and to phrase answers; without it, keyword rules and templates do the same job.</span></div>
+  <div class="grid g-3">
+    <div class="card gate"><div class="g-ico ico-On-hold">${ic("table")}</div><b>Gate A · Data</b><p>Missing required fields, invalid pin, city/pin or city/state mismatch, or notes that contradict the form put the applicant <b>On hold</b> with the exact fix.</p></div>
+    <div class="card gate"><div class="g-ico ico-Not-approved">${ic("pin")}</div><b>Gate B · Location</b><p>A pin in no territory, or a pin that already has a brand store, is <b>Not approved</b>; other open pins or territories are suggested.</p></div>
+    <div class="card gate"><div class="g-ico ico-Waitlisted">${ic("shield")}</div><b>Gate C · Readiness</b><p>Funds under ${Math.round(a.not_approved_below * 100)}% of the store's cost: <b>Not approved</b>. ${Math.round(a.not_approved_below * 100)}–100%, no space, upper floor (non-mall), under ${META.min_size_sqft} sq ft or unconfirmed funding: <b>On hold</b>.</p></div>
+  </div>
+  <div class="grid g-2">
+    <div class="card"><div class="card-h"><h3>Score card</h3><span class="sub">${totalW} points, eligible applicants only</span></div><div class="card-b weights">
+      ${Object.entries(w).map(([k, v]) => `<div><span>${labels[k] || k}</span><span class="bar"><i style="width:${100 * v / 25}%"></i></span><b class="num">${v}</b></div>`).join("")}
+      <p class="muted" style="margin:10px 0 0;font-size:12.5px">Investment: ratio 1.0 earns ${a.base_points_at_1}, rising to ${w.investment_adequacy} at ${a.full_points_at}×. Location: over 3 km from a brand store earns 15, 1.5–3 km 8, under 1.5 km 0.</p></div></div>
+    <div class="card"><div class="card-h"><h3>Allocation and tie-break</h3></div><div class="card-b"><ol class="steps-list">
+      <li>Rank eligible applicants within each territory by score.</li><li>Ties: higher investment ratio, then more experience, then shorter time to open, then lower Application ID.</li>
+      <li>Walk the ranking: a pin already won goes to the waitlist; once slots are full, the rest are waitlisted.</li><li>Invariants are checked after every run: no two stores in one pin, slots never exceeded.</li></ol></div></div>
+  </div>
+  <div class="card"><div class="card-h"><h3>Cost to open a store</h3><span class="sub">team assumptions, scaled from public Lenskart figures</span></div>
+    <div class="table-wrap"><table><thead><tr><th>Tier</th><th class="num">Franchise fee</th><th class="num">Fit-out / sq ft</th><th class="num">Inventory</th><th class="num">Working capital</th><th class="num">Rent / sq ft / month</th><th class="num">Revenue / sq ft / month</th></tr></thead><tbody>
+    ${tiers.map((t) => { const c = META.cost_model[t]; return `<tr><td><b style="color:var(--text)">${t}</b></td><td class="num">₹${fmt(c.franchise_fee / 1e5)} L</td><td class="num">₹${c.fitout_per_sqft.toLocaleString("en-IN")}</td><td class="num">₹${fmt(c.inventory / 1e5)} L</td><td class="num">₹${fmt(c.working_capital / 1e5)} L</td><td class="num">₹${c.rent_per_sqft_month}</td><td class="num">₹${META.revenue_model[t].revenue_per_sqft_month.toLocaleString("en-IN")}</td></tr>`; }).join("")}
+    </tbody></table></div>
+    <div class="card-b" style="border-top:1px solid var(--border)"><div class="sec-title">Worked examples</div><div class="facts">
+      ${META.worked_examples.map((e) => `<div class="fact"><div class="f-l">${e.tier} · ${e.size} sq ft · ${e.space.toLowerCase()}</div><div class="f-v">₹${fmt(e.required_lakh)} lakh</div></div>`).join("")}</div>
+      <p class="muted" style="margin:12px 0 0;font-size:12.5px">Rent deposit is ${META.rent_deposit_months} months' rent (rented spaces only). Payback uses a ${Math.round(META.net_margin * 100)}% net margin on revenue.</p></div></div>
+  <div class="card"><div class="card-h"><h3>Onboarding and training</h3></div><div class="card-b"><div class="grid g-3">
+    <div><div class="sec-title">Checklist</div><p style="margin:0">Nine dated steps from offer to 90-day review, scheduled backwards from the target launch, or forwards from today when the target is unrealistic. High-priority territories are fast-tracked.</p></div>
+    <div><div class="sec-title">Training tracks</div><p style="margin:0">0 years: Foundation, 10 days + 2 weeks shadowing. 1–5 years: Standard, 6 days + 1 week. 6+ years: Fast track, 3 days.</p></div>
+    <div><div class="sec-title">Language and shadowing</div><p style="margin:0">All modules in the applicant's preferred language, with shadowing at the nearest existing store.</p></div></div>
+    <p class="faint" style="margin:14px 0 0;font-size:12px">Distances use Department of Posts pin-code coordinates (data.gov.in, Government Open Data Licence).</p></div></div>
+  </div>`;
 }
+
+// ---------------------------------------------------------------- render
 function render() {
-  renderTabs();
-  $("view").innerHTML = { Upload: viewUpload, Results: viewResults, Applicant: viewApplicant, "How it decides": viewMethod }[S.view]();
-  renderChat(); save();
+  if (!S.result && VIEWS.find((v) => v.key === S.view)?.needs) S.view = "upload";
+  renderShell();
+  const fn = { upload: viewUpload, dashboard: viewDashboard, applications: viewApplications, applicant: viewApplicant, method: viewMethod }[S.view];
+  $("view").innerHTML = fn();
+  renderMsgs(); syncAssistant(); save();
 }
 
 // ---------------------------------------------------------------- events
 document.addEventListener("click", (ev) => {
-  const t = ev.target.closest("[data-view],[data-app],[data-prompt],#sample,#export,#drop");
-  if (!t) return;
-  if (t.dataset.view) { S.view = t.dataset.view; render(); window.scrollTo(0, 0); }
-  else if (t.dataset.app) { S.selected = t.dataset.app; S.view = "Applicant"; render(); window.scrollTo(0, 0); }
+  const t = ev.target.closest("[data-view],[data-app],[data-prompt],[data-action],[data-filter],[data-ter],[data-sort],[data-tab],#drop,#menu,#as-close,#backdrop,#reset,#clear");
+  if (!t || t.disabled) return;
+  if (t.dataset.view) go(t.dataset.view);
+  else if (t.dataset.app) go("applicant", { selected: t.dataset.app });
   else if (t.dataset.prompt) send(t.dataset.prompt);
-  else if (t.id === "sample") loadSample();
-  else if (t.id === "export") downloadExport();
+  else if (t.dataset.filter !== undefined) { S.filters = { dec: t.dataset.filter, ter: S.view === "applications" ? S.filters.ter : "", q: S.view === "applications" ? S.filters.q : "" }; go("applications"); }
+  else if (t.dataset.ter) { S.filters = { dec: "", ter: t.dataset.ter, q: "" }; go("applications"); }
+  else if (t.dataset.sort) { const k = t.dataset.sort; S.sort = { key: k, dir: S.sort.key === k ? -S.sort.dir : 1 }; render(); }
+  else if (t.dataset.tab) { S.tab = t.dataset.tab; render(); }
+  else if (t.dataset.action === "sample") loadSample();
+  else if (t.dataset.action === "export") downloadExport();
+  else if (t.dataset.action === "reset" || t.id === "reset") { ev.preventDefault(); resetToUpload(); }
+  else if (t.dataset.action === "assistant") { S.assistant = !S.assistant; closeSide(); syncAssistant(); renderShell(); save(); if (S.assistant) $("chat-input").focus(); }
+  else if (t.id === "clear") { ev.preventDefault(); S.messages = []; render(); }
   else if (t.id === "drop") $("file").click();
+  else if (t.id === "menu") { $("sidebar").classList.add("open"); $("backdrop").classList.add("on"); }
+  else if (t.id === "as-close") { S.assistant = false; syncAssistant(); renderShell(); save(); }
+  else if (t.id === "backdrop") { $("sidebar").classList.remove("open"); S.assistant = false; syncAssistant(); renderShell(); save(); }
+});
+document.addEventListener("keydown", (ev) => {
+  if (ev.target.id === "drop" && (ev.key === "Enter" || ev.key === " ")) { ev.preventDefault(); $("file").click(); }
+  if (ev.target.id === "chat-input" && ev.key === "Enter" && !ev.shiftKey) { ev.preventDefault(); $("chat-form").requestSubmit(); }
+  if (ev.key === "Escape") { $("sidebar").classList.remove("open"); if (window.innerWidth <= 1280 && S.assistant) { S.assistant = false; syncAssistant(); renderShell(); } }
 });
 document.addEventListener("change", (ev) => {
   const id = ev.target.id;
   if (id === "file") { loadFile(ev.target.files[0]); ev.target.value = ""; }
-  else if (id === "f-dec") { S.filters.dec = ev.target.value; render(); }
   else if (id === "f-ter") { S.filters.ter = ev.target.value; render(); }
-  else if (id === "pick") { S.selected = ev.target.value; render(); }
-  else if (id === "ai") rerun();
+  else if (id === "pick") go("applicant", { selected: ev.target.value });
+  else if (id === "ai") { renderShell(); rerun(); }
 });
 document.addEventListener("input", (ev) => {
-  if (ev.target.id === "f-q") {
-    S.filters.q = ev.target.value; const pos = ev.target.selectionStart; render();
-    const el = $("f-q"); el.focus(); el.setSelectionRange(pos, pos);
-  }
+  if (ev.target.id === "f-q") { S.filters.q = ev.target.value; const pos = ev.target.selectionStart; render(); const el = $("f-q"); el.focus(); el.setSelectionRange(pos, pos); }
+  if (ev.target.id === "chat-input") { ev.target.style.height = "auto"; ev.target.style.height = Math.min(ev.target.scrollHeight, 120) + "px"; }
 });
 document.addEventListener("dragover", (ev) => { const d = ev.target.closest("#drop"); if (d) { ev.preventDefault(); d.classList.add("over"); } });
 document.addEventListener("dragleave", (ev) => { const d = ev.target.closest("#drop"); if (d) d.classList.remove("over"); });
 document.addEventListener("drop", (ev) => { const d = ev.target.closest("#drop"); if (d) { ev.preventDefault(); d.classList.remove("over"); loadFile(ev.dataTransfer.files[0]); } });
-$("chat-form").addEventListener("submit", (ev) => { ev.preventDefault(); const v = $("chat-input").value; $("chat-input").value = ""; send(v); });
-$("reset").addEventListener("click", resetToUpload);
-$("clear").addEventListener("click", () => { S.messages = []; render(); });
+$("chat-form").addEventListener("submit", (ev) => { ev.preventDefault(); const el = $("chat-input"); const v = el.value; el.value = ""; el.style.height = "auto"; send(v); });
+window.addEventListener("resize", () => syncAssistant());
 
 (async function init() {
+  $("brand-mark").innerHTML = ic("store"); $("as-ico").innerHTML = ic("spark"); $("menu").innerHTML = ic("menu");
+  $("as-close").innerHTML = ic("x"); $("send").innerHTML = ic("send");
   restore();
+  if (window.innerWidth <= 1280) S.assistant = false;  // overlay: start closed on smaller screens
   try { META = await (await api("/api/meta")).json(); } catch (e) { META = { llm_available: false }; }
   $("ai").disabled = !META.llm_available;
   $("ai").checked = META.llm_available && (S.session ? !!S.session.use_llm : true);
-  $("ai-note").textContent = META.llm_available ? `Model: ${META.model}` : "AI off (no API key set) – answers come from templates over the stored reasons.";
+  $("ai-note").textContent = META.llm_available ? `AI phrasing on (${META.model}) · rules still decide` : "AI off (no API key) · answers built from the stored reasons";
   render();
 })();
 </script>
