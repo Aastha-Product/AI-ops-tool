@@ -34,6 +34,7 @@
   --side-bg: #ffffff; --side-text: #4b5468; --side-hover: #f3f4f8; --side-active: #eef0ff; --side-active-text: #4338ca;
   /* chart marks: validated with the dataviz palette checker (light surface #ffffff) */
   --c-ok: #12a15e; --c-wait: #c27a0a; --c-hold: #2e7fe0; --c-no: #d92d20;
+  --u-exist: #5b5bd6; --u-new: #0e9f8e;  /* store utilization: existing stores, new approvals */
   --ok: #067647; --ok-bg: #ecfdf3; --ok-bd: #abefc6;
   --wait: #b54708; --wait-bg: #fffaeb; --wait-bd: #fedf89;
   --hold: #175cd3; --hold-bg: #eff8ff; --hold-bd: #b2ddff;
@@ -57,6 +58,7 @@
     --side-bg: #0f1424; --side-text: #9aa3bb; --side-hover: rgba(255,255,255,.04); --side-active: #1f2350; --side-active-text: #c7c9ff;
     /* validated against the dark chart surface #141b2d */
     --c-ok: #22a868; --c-wait: #c98315; --c-hold: #3b8fe0; --c-no: #e5574b;
+    --u-exist: #7272ee; --u-new: #17a594;
     --ok: #75e0a7; --ok-bg: #0b2a1c; --ok-bd: #155d3b;
     --wait: #fdb022; --wait-bg: #2e1f05; --wait-bd: #6b4709;
     --hold: #84caff; --hold-bg: #0b2240; --hold-bd: #1d4f8c;
@@ -330,7 +332,7 @@ td.wrap { white-space: normal; min-width: 220px; max-width: 420px; }
 .kpi .k-top { padding-right: 34px; }
 .kpi .k-sub .up { display: inline-block; padding: 0 6px; border-radius: 6px; background: var(--surface-3); color: var(--text-2); font-weight: 650; margin-right: 4px; }
 .kpi.kpi-hero .k-sub .up { background: rgba(255,255,255,.2); color: #fff; }
-.g-chart { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+.g-chart { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
 .chart-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--text-2); }
 .chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .chart-legend i, .donut-list i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex: none; }
@@ -341,13 +343,6 @@ svg.chart text.lbl { fill: var(--text-2); font-weight: 600; font-size: 11.5px; }
 svg.chart .grid { stroke: var(--border); stroke-width: 1; }
 svg.chart [data-tip] { cursor: pointer; transition: opacity .12s; }
 svg.chart:hover [data-tip] { opacity: .5; } svg.chart [data-tip]:hover { opacity: 1; }
-.gauge { position: relative; max-width: 260px; margin: 6px auto 0; }
-.gauge-num { position: absolute; left: 0; right: 0; bottom: 6px; text-align: center; }
-.gauge-num b { font-size: 30px; letter-spacing: -.02em; display: block; line-height: 1.1; color: var(--text); }
-.gauge-num span { font-size: 12.5px; color: var(--muted); }
-.gauge-legend { display: flex; justify-content: center; gap: 16px; margin-top: 12px; font-size: 12.5px; color: var(--text-2); }
-.gauge-legend span { display: inline-flex; align-items: center; gap: 6px; }
-.gauge-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
 .donut-wrap { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
 .donut-wrap svg { width: 148px; height: 148px; flex: none; }
 .donut-list { flex: 1; min-width: 160px; list-style: none; margin: 0; padding: 0; }
@@ -421,6 +416,35 @@ svg.chart:hover [data-tip] { opacity: .5; } svg.chart [data-tip]:hover { opacity
 .pk-foot { display: flex; justify-content: space-between; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--border); font-size: 11.5px; color: var(--faint); }
 .pk-foot kbd { font-family: var(--mono); font-size: 10.5px; padding: 0 5px; border: 1px solid var(--border); border-radius: 5px; background: var(--surface-2); color: var(--muted); }
 
+
+/* ------------------------------------------------------------------ dashboard filters + store utilization */
+.dfilters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 12px 18px 0; }
+.dfilters select.input { height: 32px; font-size: 13px; padding: 0 8px; min-width: 128px; }
+.dfilters .clear { font-size: 12.5px; color: var(--indigo); cursor: pointer; border: 0; background: none; padding: 0 4px; font: inherit; }
+.dfilters .legend-wrap { margin-left: auto; }
+.util-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
+.util-stats div { border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; background: var(--surface-2); }
+.util-stats b { display: block; font-size: 19px; letter-spacing: -.02em; color: var(--text); line-height: 1.2; }
+.util-stats span { font-size: 11.5px; color: var(--muted); }
+.urow { display: grid; grid-template-columns: 104px minmax(0, 1fr) 74px; gap: 10px; align-items: center; padding: 7px 4px; border-radius: 8px; cursor: pointer; }
+.urow:hover { background: var(--surface-2); }
+.urow .u-name b { display: block; font-family: var(--mono); font-size: 12px; color: var(--text); }
+.urow .u-name span { display: block; font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.utrack { display: flex; gap: 2px; height: 14px; }
+.utrack i { display: block; height: 100%; border-radius: 4px; min-width: 6px; }
+.u-ex { background: var(--u-exist); } .u-new { background: var(--u-new); }
+.u-open { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--amber) 30%, transparent) 0 3px, transparent 3px 7px); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--amber) 55%, transparent); }
+.u-num { text-align: right; font-size: 12px; color: var(--muted); white-space: nowrap; }
+.u-num b { color: var(--text); font-weight: 650; }
+.u-gap { display: inline-block; margin-left: 4px; padding: 0 6px; border-radius: 6px; background: color-mix(in srgb, var(--amber) 18%, transparent); color: var(--text); font-weight: 650; font-size: 11.5px; }
+.u-gap.zero { background: color-mix(in srgb, var(--u-new) 18%, transparent); }
+.u-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--text-2); margin: 12px 0 0; }
+.u-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.u-legend i { width: 14px; height: 10px; border-radius: 3px; display: inline-block; }
+.opp { display: flex; gap: 10px; margin-top: 14px; padding: 11px 12px; border-radius: 10px; font-size: 13px; color: var(--text-2);
+  background: linear-gradient(135deg, color-mix(in srgb, #f59e0b 13%, var(--surface)), color-mix(in srgb, #f43f5e 8%, var(--surface))); border: 1px solid color-mix(in srgb, #f59e0b 30%, transparent); }
+.opp svg.i { color: var(--amber); margin-top: 2px; } .opp b { color: var(--text); }
+
 /* ------------------------------------------------------------------ responsive */
 @media (max-width: 1280px) {
   .assistant { position: fixed; right: 0; top: 0; box-shadow: var(--shadow-lg); z-index: 50; }
@@ -451,6 +475,8 @@ svg.chart:hover [data-tip] { opacity: .5; } svg.chart [data-tip]:hover { opacity
   .profile { flex-wrap: wrap; } .p-nav { margin-left: 0; }
   .search input { width: 100%; } .search { flex: 1; }
   .picker, .pk-trigger { width: 100%; }
+  .dfilters select.input { flex: 1; min-width: 0; } .dfilters .legend-wrap { margin-left: 0; width: 100%; }
+  .urow { grid-template-columns: 84px minmax(0, 1fr) 66px; }
   .topbar h1 { font-size: 16px; }
   .crumbs, .topbar h1 { max-width: calc(100vw - 190px); }
   .greet h2 { font-size: 21px; }
@@ -590,7 +616,7 @@ function go(view, extra = {}) { Object.assign(S, extra, { view }); closeSide(); 
 function applyLoad(j) {
   S.session = j.session; S.original = JSON.parse(JSON.stringify(j.session)); S.result = j.result; S.summary = j.summary;
   S.warnings = j.warnings; S.fileName = j.file_name; S.messages = []; S.changeLog = []; S.selected = null;
-  S.filters = { dec: "", ter: "", q: "" }; S.sort = { key: "", dir: 1 }; S.tab = "overview";
+  S.filters = { dec: "", ter: "", q: "" }; S.sort = { key: "", dir: 1 }; S.tab = "overview"; S.dash = { ter: "", pin: "", tier: "" };
   S.view = j.summary.applications ? "dashboard" : "upload";
 }
 async function loadSample() {
@@ -749,12 +775,42 @@ function avatarHtml(name, id, size = 30) {
   return `<span class="mini-av" style="width:${size}px;height:${size}px;background:hsl(${hue(id)} 58% 48%)">${esc(initials(name))}</span>`;
 }
 // Stacked bars: applicants per territory, split by decision. 2px surface gap between segments, 4px rounded ends.
-function territoryBars(R, recs) {
-  const ters = R.territories.map((t) => t.territory_id);
-  const rows = ters.map((tid) => { const c = {}; DECISIONS.forEach((d) => (c[d] = recs.filter((r) => r.territory_id === tid && r.decision === d).length)); return { tid, c, total: DECISIONS.reduce((a, d) => a + c[d], 0) }; });
+// Applicants chart rows, filtered by the dashboard dropdowns. Territory or pin chosen -> one bar per pin code.
+function dashRows(R, recs) {
+  const f = S.dash || (S.dash = { ter: "", pin: "", tier: "" });
+  const terOf = Object.fromEntries(R.territories.map((t) => [t.territory_id, t]));
+  const pool = recs.filter((r) => r.territory_id && (!f.tier || (terOf[r.territory_id] || {}).tier === f.tier) &&
+    (!f.ter || r.territory_id === f.ter) && (!f.pin || r.pin === f.pin));
+  const byPin = !!(f.ter || f.pin);
+  const keys = byPin ? [...new Set(pool.map((r) => r.pin))].sort()
+    : R.territories.filter((t) => !f.tier || t.tier === f.tier).map((t) => t.territory_id);
+  const rows = keys.map((k) => {
+    const mine = pool.filter((r) => (byPin ? r.pin : r.territory_id) === k), c = {};
+    DECISIONS.forEach((d) => (c[d] = mine.filter((r) => r.decision === d).length));
+    return { label: k, c, total: mine.length, ter: byPin ? (mine[0] || {}).territory_id : k };
+  });
+  return { byPin, rows, count: pool.length };
+}
+function dashFilters(R, recs) {
+  const f = S.dash, terOf = Object.fromEntries(R.territories.map((t) => [t.territory_id, t]));
+  const tiers = [...new Set(R.territories.map((t) => t.tier).filter(Boolean))].sort();
+  const ters = R.territories.filter((t) => !f.tier || t.tier === f.tier);
+  const pins = [...new Set(recs.filter((r) => r.territory_id && (!f.tier || (terOf[r.territory_id] || {}).tier === f.tier) &&
+    (!f.ter || r.territory_id === f.ter)).map((r) => r.pin))].sort();
+  const opt = (v, label, cur) => `<option value="${esc(v)}" ${v === cur ? "selected" : ""}>${esc(label)}</option>`;
+  return `<div class="dfilters">
+    <select class="input" id="d-ter" aria-label="Filter by territory">${opt("", "All territories", f.ter)}${ters.map((t) => opt(t.territory_id, `${t.territory_id} · ${t.city || ""}`, f.ter)).join("")}</select>
+    <select class="input" id="d-pin" aria-label="Filter by pin code">${opt("", "All pin codes", f.pin)}${pins.map((p) => opt(p, p, f.pin)).join("")}</select>
+    <select class="input" id="d-tier" aria-label="Filter by city tier">${opt("", "All tiers", f.tier)}${tiers.map((t) => opt(t, t, f.tier)).join("")}</select>
+    ${f.ter || f.pin || f.tier ? `<button class="clear" data-action="dclear">Clear filters</button>` : ""}
+    <div class="legend-wrap chart-legend">${DECISIONS.map((d) => `<span><i class="c-${cls(d)}"></i>${d}</span>`).join("")}</div></div>`;
+}
+// Stacked bars by decision. 2px surface gap between segments, 4px rounded ends.
+function stackBars(rows, byPin) {
+  if (!rows.length || !rows.some((r) => r.total)) return `<div class="empty">${ic("search")}<div>No applicants match these filters.</div></div>`;
   const max = Math.max(1, ...rows.map((r) => r.total));
   const step = max <= 5 ? 1 : max <= 10 ? 2 : 5, top = Math.ceil(max / step) * step;
-  const W = Math.max(360, rows.length * 78), H = 230, pl = 28, pb = 34, pt = 8, ph = H - pb - pt, bw = 30;
+  const W = Math.max(360, rows.length * 78), H = 320, pl = 28, pb = 34, pt = 8, ph = H - pb - pt, bw = 30;
   const slot = (W - pl) / Math.max(rows.length, 1);
   let g = "";
   for (let v = 0; v <= top; v += step) { const y = pt + ph - (v / top) * ph; g += `<line class="grid" x1="${pl}" x2="${W}" y1="${y}" y2="${y}"/><text x="${pl - 8}" y="${y + 4}" text-anchor="end">${v}</text>`; }
@@ -764,23 +820,42 @@ function territoryBars(R, recs) {
       const n = r.c[d]; if (!n) return;
       const h = (n / top) * ph, gap = 2;
       y -= h;
-      g += `<rect x="${x}" y="${y + gap / 2}" width="${bw}" height="${Math.max(h - gap, 2)}" rx="4" fill="${DEC_VAR[d]}" data-tip="${esc(r.tid)} · ${d}: ${n}" data-ter="${esc(r.tid)}"/>`;
+      g += `<rect x="${x}" y="${y + gap / 2}" width="${bw}" height="${Math.max(h - gap, 2)}" rx="4" fill="${DEC_VAR[d]}" data-tip="${esc(r.label)} · ${d}: ${n}" data-ter="${esc(r.ter || "")}"/>`;
     });
-    g += `<text class="lbl" x="${x + bw / 2}" y="${H - 16}" text-anchor="middle">${esc(r.tid)}</text><text x="${x + bw / 2}" y="${H - 3}" text-anchor="middle">${r.total} total</text>`;
+    g += `<text class="lbl" x="${x + bw / 2}" y="${H - 16}" text-anchor="middle">${esc(r.label)}</text><text x="${x + bw / 2}" y="${H - 3}" text-anchor="middle">${r.total} total</text>`;
   });
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Applicants per territory by decision">${g}</svg>`;
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Applicants per ${byPin ? "pin code" : "territory"} by decision">${g}</svg>`;
 }
-// Half-circle gauge: approved stores vs open slots.
-function slotGauge(filled, total) {
-  const pct = total ? Math.min(1, filled / total) : 0, r = 80, cx = 100, cy = 96;
-  const arc = (p) => { const a = Math.PI * (1 - p); return `${cx + r * Math.cos(a)} ${cy - r * Math.sin(a)}`; };
-  const track = `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`;
-  const val = pct > 0 ? `<path d="M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${arc(pct)}" stroke="url(#gg)" stroke-width="18" fill="none" stroke-linecap="round" data-tip="${filled} of ${total} slots filled"/>` : "";
-  return `<div class="gauge"><svg class="chart" viewBox="0 0 200 110" role="img" aria-label="${filled} of ${total} open slots filled">
-    <defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#14b8a6"/><stop offset=".55" stop-color="#6366f1"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
-    <path d="${track}" stroke="var(--surface-3)" stroke-width="18" fill="none" stroke-linecap="round"/>${val}</svg>
-    <div class="gauge-num"><b>${total ? Math.round(pct * 100) + "%" : "–"}</b><span>${filled} of ${total} slots filled</span></div></div>
-    <div class="gauge-legend"><span><i style="background:linear-gradient(90deg,#14b8a6,#6366f1,#a855f7)"></i>Filled ${filled}</span><span><i style="background:var(--surface-3)"></i>Open ${Math.max(0, total - filled)}</span></div>`;
+// Store utilization: capacity = pin codes in the territory (one store per pin).
+function utilizationPanel(R) {
+  const ts = R.territories.slice().sort((a, b) => b.open_pin_count - a.open_pin_count || a.territory_id.localeCompare(b.territory_id));
+  const sum = (k) => R.territories.reduce((a, t) => a + (t[k] || 0), 0);
+  const cap = sum("pin_capacity"), after = sum("stores_after_run"), open = sum("open_pin_count"), existing = sum("existing_stores"), newly = sum("approved");
+  const maxCap = Math.max(1, ...ts.map((t) => t.pin_capacity));
+  const pctOf = (n, d) => (d ? Math.round(100 * n / d) : 0);
+  let h = `<div class="util-stats"><div><b>${cap}</b><span>Pin-code capacity</span></div>
+    <div><b>${after}</b><span>Stores (${existing} existing + ${newly} new)</span></div>
+    <div><b>${open}</b><span>Open pins · ${pctOf(open, cap)}% of capacity</span></div></div>`;
+  for (const t of ts) {
+    const seg = (n, cls, tip) => n ? `<i class="${cls}" style="flex:${n}" data-tip="${esc(tip)}"></i>` : "";
+    const openList = t.open_pins.slice(0, 6).join(", ") + (t.open_pins.length > 6 ? "…" : "");
+    h += `<div class="urow" data-ter="${esc(t.territory_id)}" title="Brand plan this round: ${t.slots} slot(s)">
+      <div class="u-name"><b>${esc(t.territory_id)}</b><span>${esc(t.city || "")} · ${esc(t.tier || "")}</span></div>
+      <div class="utrack" style="width:${(100 * t.pin_capacity) / maxCap}%">
+        ${seg(t.existing_stores, "u-ex", `${t.territory_id} · ${t.existing_stores} existing store(s)`)}
+        ${seg(t.approved, "u-new", `${t.territory_id} · ${t.approved} new store(s) approved`)}
+        ${seg(t.open_pin_count, "u-open", `${t.territory_id} · ${t.open_pin_count} open pin(s): ${openList}`)}</div>
+      <div class="u-num"><b>${t.stores_after_run}</b>/${t.pin_capacity}<span class="u-gap ${t.open_pin_count ? "" : "zero"}">${t.open_pin_count ? "+" + t.open_pin_count : "full"}</span></div></div>`;
+  }
+  h += `<div class="u-legend"><span><i class="u-ex"></i>Existing stores</span><span><i class="u-new"></i>New approvals</span><span><i class="u-open"></i>Open pins (opportunity)</span></div>`;
+  const best = ts.find((t) => t.open_pin_count);
+  if (best) {
+    const wait = best.pipeline_ids.length;
+    h += `<div class="opp">${ic("flag")}<span><b>Biggest opportunity: ${esc(best.territory_id)} · ${esc(best.city || "")}</b> has ${best.open_pin_count} open pin code${best.open_pin_count === 1 ? "" : "s"}
+      (${best.stores_after_run} of ${best.pin_capacity} covered)${wait ? `, and ${wait} applicant${wait === 1 ? " is" : "s are"} already waiting there (${esc(best.pipeline_ids.join(", "))})` : ""}.
+      ${best.slots <= best.approved ? ` Raising this round's ${best.slots}-slot plan would let them move forward.` : ""}</span></div>`;
+  }
+  return h;
 }
 // Donut: decision mix, 2px gaps between arcs.
 function decisionDonut(c, total) {
@@ -807,7 +882,7 @@ function scoreRing(score) {
 function viewDashboard() {
   const R = S.result, recs = records(), c = R.counts, total = recs.length;
   const pct = (n) => total ? Math.round(100 * n / total) : 0;
-  const slots = R.territories.reduce((a, t) => a + (t.slots || 0), 0), filled = R.territories.reduce((a, t) => a + t.approved, 0);
+  const filled = R.territories.reduce((a, t) => a + t.approved, 0);
   const outside = recs.filter((r) => !r.territory_id).length;
   let h = `<div class="greet"><div><h2>${greeting()}, <span class="hl">Growth Team</span></h2>
     <p>${total} applications from <b>${esc(S.fileName || "your file")}</b> decided · ${filled} new stores approved across ${R.territories.length} territories.</p></div></div>`;
@@ -818,11 +893,11 @@ function viewDashboard() {
     h += `<button class="card kpi k-${cls(d)}" data-filter="${d}"><span class="k-go">${ic("arrow")}</span><div class="k-top"><span class="k-ico ico-${cls(d)}">${ic(DEC_ICON[d])}</span>${d}</div>
       <div class="k-val">${c[d]}</div><div class="k-sub"><span class="up">${pct(c[d])}%</span>of applications</div></button>`;
   }
+  const dr = dashRows(R, recs);
   h += `</div><div class="grid g-chart" style="margin-bottom:16px">
-    <div class="card"><div class="card-h"><h3>Applicants by territory</h3><span class="sub">split by decision${outside ? ` · ${outside} outside any territory` : ""}</span>
-      <div class="right chart-legend hide-sm">${DECISIONS.map((d) => `<span><i class="c-${cls(d)}"></i>${d}</span>`).join("")}</div></div>
-      <div class="card-b">${territoryBars(R, recs)}</div></div>
-    <div class="card"><div class="card-h"><h3>Store slots filled</h3><span class="sub">approvals vs open slots</span></div><div class="card-b">${slotGauge(filled, slots)}</div></div></div>`;
+    <div class="card"><div class="card-h"><h3>Applicants by ${dr.byPin ? "pin code" : "territory"}</h3><span class="sub">${dr.count} applicants · split by decision${!dr.byPin && outside ? ` · ${outside} outside any territory` : ""}</span></div>
+      ${dashFilters(R, recs)}<div class="card-b">${stackBars(dr.rows, dr.byPin)}</div></div>
+    <div class="card"><div class="card-h"><h3>Store utilization</h3><span class="sub">stores vs pin-code capacity · sorted by opportunity</span></div><div class="card-b">${utilizationPanel(R)}</div></div></div>`;
   const holds = recs.filter((r) => r.decision === "On hold");
   h += `<div class="grid g-2" style="margin-bottom:16px">
     <div class="card"><div class="card-h"><h3>Decision mix</h3><span class="sub">click to filter</span></div><div class="card-b"><div class="donut-wrap">${decisionDonut(c, total)}
@@ -1104,6 +1179,7 @@ document.addEventListener("click", (ev) => {
   else if (t.dataset.ter) { S.filters = { dec: "", ter: t.dataset.ter, q: "" }; go("applications"); }
   else if (t.dataset.sort) { const k = t.dataset.sort; S.sort = { key: k, dir: S.sort.key === k ? -S.sort.dir : 1 }; render(); }
   else if (t.dataset.tab) { S.tab = t.dataset.tab; render(); }
+  else if (t.dataset.action === "dclear") { S.dash = { ter: "", pin: "", tier: "" }; render(); }
   else if (t.dataset.action === "sample") loadSample();
   else if (t.dataset.action === "export") downloadExport();
   else if (t.dataset.action === "reset" || t.id === "reset") { ev.preventDefault(); resetToUpload(); }
@@ -1128,6 +1204,13 @@ document.addEventListener("change", (ev) => {
   const id = ev.target.id;
   if (id === "file") { loadFile(ev.target.files[0]); ev.target.value = ""; }
   else if (id === "f-ter") { S.filters.ter = ev.target.value; render(); }
+  else if (id === "d-ter" || id === "d-pin" || id === "d-tier") {
+    const f = S.dash || (S.dash = { ter: "", pin: "", tier: "" }), v = ev.target.value;
+    if (id === "d-tier") { f.tier = v; f.ter = ""; f.pin = ""; }
+    else if (id === "d-ter") { f.ter = v; f.pin = ""; }
+    else { f.pin = v; if (v) { const r = records().find((x) => x.pin === v); if (r && r.territory_id) f.ter = r.territory_id; } }
+    render();
+  }
 });
 document.addEventListener("mousemove", (ev) => {
   const t = ev.target.closest && ev.target.closest("[data-tip]"), tip = $("tip");

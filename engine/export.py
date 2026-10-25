@@ -47,10 +47,12 @@ def export_xlsx(result: dict, change_log: list[dict] | None = None) -> bytes:
     t = result["territories"]
     _sheet(wb, "Territories",
            ["Territory", "City", "Tier", "Priority", "Slots", "Applicants", "Approved", "Waitlisted", "On hold",
-            "Not approved", "Pins approved", "Existing-store pins", "Slots left"],
+            "Not approved", "Pins approved", "Existing-store pins", "Slots left",
+            "Pin capacity", "Stores after run", "Open pins", "Open pin codes"],
            [[x["territory_id"], x["city"], x["tier"], x["priority"], x["slots"], x["applicants"], x["approved"],
              x["waitlisted"], x["on_hold"], x["not_approved"], x["pins_used"], x["existing_store_pins"],
-             x["open_slots_left"]] for x in t])
+             x["open_slots_left"], x["pin_capacity"], x["stores_after_run"], x["open_pin_count"],
+             ", ".join(x["open_pins"])] for x in t])
     _sheet(wb, "Score breakdown", ["ID", "Factor", "Input", "Points", "Max", "Why"],
            [[r["app_id"], b["label"], b["input"], b["points"], b["max"], b["why"]]
             for r in recs if r["score_breakdown"] for b in r["score_breakdown"]], [10, 26, 40, 8, 6, 80])

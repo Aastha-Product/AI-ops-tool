@@ -452,6 +452,11 @@ def _territory_summary(territories, records, stores) -> list[dict]:
     for t in territories:
         recs = [r for r in records.values() if r["territory_id"] == t["territory_id"]]
         approved = [r for r in recs if r["decision"] == "Approved"]
+        # Store capacity: one store per pin code, so every pin in the territory is one possible store.
+        existing = [p for p in t["pins"] if p in store_pins]
+        covered = set(existing) | {r["pin"] for r in approved}
+        open_pins = [p for p in t["pins"] if p not in covered]
+        pipeline = [r for r in recs if r["decision"] in ("Waitlisted", "On hold") and r["pin"] in open_pins]
         out.append({
             "territory_id": t["territory_id"], "city": t.get("city"), "tier": t.get("tier"), "priority": t.get("priority"),
             "slots": t["slots"], "applicants": len(recs), "approved": len(approved),
@@ -461,6 +466,12 @@ def _territory_summary(territories, records, stores) -> list[dict]:
             "pins_used": ", ".join(sorted(r["pin"] for r in approved)),
             "existing_store_pins": ", ".join(p for p in t["pins"] if p in store_pins),
             "open_slots_left": max(0, t["slots"] - len(approved)),
+            "pin_capacity": len(t["pins"]),
+            "existing_stores": len(existing),
+            "stores_after_run": len(covered),
+            "open_pins": open_pins,
+            "open_pin_count": len(open_pins),
+            "pipeline_ids": [r["app_id"] for r in pipeline],
         })
     return out
 
