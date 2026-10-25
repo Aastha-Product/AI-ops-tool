@@ -338,6 +338,9 @@ td.wrap { white-space: normal; min-width: 220px; max-width: 420px; }
 .chart-legend i, .donut-list i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex: none; }
 .c-Approved { background: var(--c-ok); } .c-Waitlisted { background: var(--c-wait); } .c-On-hold { background: var(--c-hold); } .c-Not-approved { background: var(--c-no); }
 svg.chart { width: 100%; height: auto; display: block; overflow: visible; }
+.chart-box { width: 100%; aspect-ratio: 640 / 340; display: flex; align-items: center; justify-content: center; }
+.chart-box > svg.chart { height: 100%; }
+.chart-box .empty { padding: 0; }
 svg.chart text { font-family: var(--font); fill: var(--muted); font-size: 11px; }
 svg.chart text.lbl { fill: var(--text-2); font-weight: 600; font-size: 11.5px; }
 svg.chart .grid { stroke: var(--border); stroke-width: 1; }
@@ -421,7 +424,7 @@ svg.chart:hover [data-tip] { opacity: .5; } svg.chart [data-tip]:hover { opacity
 .dfilters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 12px 18px 0; }
 .dfilters select.input { height: 32px; font-size: 13px; padding: 0 8px; min-width: 128px; }
 .dfilters .clear { font-size: 12.5px; color: var(--indigo); cursor: pointer; border: 0; background: none; padding: 0 4px; font: inherit; }
-.dfilters .legend-wrap { margin-left: auto; }
+.dfilters .legend-wrap { flex-basis: 100%; justify-content: flex-end; }
 .util-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
 .util-stats div { border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; background: var(--surface-2); }
 .util-stats b { display: block; font-size: 19px; letter-spacing: -.02em; color: var(--text); line-height: 1.2; }
@@ -850,25 +853,31 @@ function dashFilters(R, recs) {
     <div class="legend-wrap chart-legend">${DECISIONS.map((d) => `<span><i class="c-${cls(d)}"></i>${d}</span>`).join("")}</div></div>`;
 }
 // Stacked bars by decision. 2px surface gap between segments, 4px rounded ends.
+// Fixed canvas (CHART_W x CHART_H) so the chart keeps the same size whatever the filters return;
+// only the bar width and spacing adapt to the number of bars.
+const CHART_W = 640, CHART_H = 340;
 function stackBars(rows, byPin) {
-  if (!rows.length || !rows.some((r) => r.total)) return `<div class="empty">${ic("search")}<div>No applicants match these filters.</div></div>`;
+  if (!rows.length || !rows.some((r) => r.total)) return `<div class="chart-box"><div class="empty">${ic("search")}<div>No applicants match these filters.</div></div></div>`;
   const max = Math.max(1, ...rows.map((r) => r.total));
   const step = max <= 5 ? 1 : max <= 10 ? 2 : 5, top = Math.ceil(max / step) * step;
-  const W = Math.max(360, rows.length * 78), H = 320, pl = 28, pb = 34, pt = 8, ph = H - pb - pt, bw = 30;
-  const slot = (W - pl) / Math.max(rows.length, 1);
+  const W = CHART_W, H = CHART_H, pl = 30, pb = 38, pt = 10, ph = H - pb - pt;
+  const slot = (W - pl) / rows.length, bw = Math.max(8, Math.min(40, slot * 0.5));
+  const dense = slot < 60, tiny = slot < 40;  // many pins: smaller labels, then angled labels
   let g = "";
   for (let v = 0; v <= top; v += step) { const y = pt + ph - (v / top) * ph; g += `<line class="grid" x1="${pl}" x2="${W}" y1="${y}" y2="${y}"/><text x="${pl - 8}" y="${y + 4}" text-anchor="end">${v}</text>`; }
   rows.forEach((r, i) => {
-    const x = pl + slot * i + (slot - bw) / 2; let y = pt + ph;
+    const cx = pl + slot * i + slot / 2, x = cx - bw / 2; let y = pt + ph;
     DECISIONS.forEach((d) => {
       const n = r.c[d]; if (!n) return;
       const h = (n / top) * ph, gap = 2;
       y -= h;
-      g += `<rect x="${x}" y="${y + gap / 2}" width="${bw}" height="${Math.max(h - gap, 2)}" rx="4" fill="${DEC_VAR[d]}" data-tip="${esc(r.label)} · ${d}: ${n}" data-ter="${esc(r.ter || "")}"/>`;
+      g += `<rect x="${x}" y="${y + gap / 2}" width="${bw}" height="${Math.max(h - gap, 2)}" rx="4" fill="${DEC_VAR[d]}" data-tip="${esc(r.label)} · ${d}: ${n} of ${r.total}" data-ter="${esc(r.ter || "")}"/>`;
     });
-    g += `<text class="lbl" x="${x + bw / 2}" y="${H - 16}" text-anchor="middle">${esc(r.label)}</text><text x="${x + bw / 2}" y="${H - 3}" text-anchor="middle">${r.total} total</text>`;
+    if (tiny) g += `<text class="lbl" x="${cx}" y="${H - pb + 14}" text-anchor="end" transform="rotate(-35 ${cx} ${H - pb + 14})" style="font-size:9.5px">${esc(r.label)}</text>`;
+    else g += `<text class="lbl" x="${cx}" y="${H - 20}" text-anchor="middle"${dense ? ' style="font-size:10px"' : ""}>${esc(r.label)}</text>` +
+      (dense ? "" : `<text x="${cx}" y="${H - 5}" text-anchor="middle">${r.total} total</text>`);
   });
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Applicants per ${byPin ? "pin code" : "territory"} by decision">${g}</svg>`;
+  return `<div class="chart-box"><svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Applicants per ${byPin ? "pin code" : "territory"} by decision">${g}</svg></div>`;
 }
 // Store utilization: capacity = pin codes in the territory (one store per pin).
 function utilizationPanel(R) {
