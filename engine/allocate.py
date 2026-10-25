@@ -69,11 +69,14 @@ def allocate_territory(territory: dict, candidates: list[dict], store_pins: set[
             res["decision"] = "Waitlisted"
             res["lost_on"] = "slots"
             ahead_ids = [a["app_id"] for a in approved]
-            res["reasons"].append(reason("WAITLIST_SLOTS", "decision", "waitlisted", "alloc", slots=slots,
-                                         slots_phrase="The only open slot" if slots == 1 else f"All {slots} open slots",
-                                         tid=tid, rank=rank, n=n,
-                                         ahead=join_human([f"{a['app_id']} ({fmt_num(a['total'])})" for a in approved]),
-                                         ahead_ids=ahead_ids))
+            if slots == 0:
+                res["reasons"].append(reason("WAITLIST_NO_SLOTS", "decision", "waitlisted", "alloc", tid=tid, rank=rank, n=n))
+            else:
+                res["reasons"].append(reason("WAITLIST_SLOTS", "decision", "waitlisted", "alloc", slots=slots,
+                                             slots_phrase="The only open slot" if slots == 1 else f"All {slots} open slots",
+                                             tid=tid, rank=rank, n=n,
+                                             ahead=join_human([f"{a['app_id']} ({fmt_num(a['total'])})" for a in approved]),
+                                             ahead_ids=ahead_ids))
         else:
             res["decision"] = "Approved"
             taken.add(c["pin"])

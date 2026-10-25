@@ -40,7 +40,11 @@ def validate(app: dict, d: dict, signals: dict) -> list[dict]:
     city, state = app.get("city"), app.get("state")
     allowed = refdata.cities()
     if (city and city not in allowed) or (state and state != "Karnataka"):
-        out.append(reason("CITY_STATE_MISMATCH", "blocking", "on_hold", "A",
+        if city and city not in allowed:
+            detail = f"The city '{city}' is not one of the brand's allowed cities ({', '.join(allowed)}, all in Karnataka)."
+        else:
+            detail = f"The state is given as {state}, but {city or 'the store'} is in Karnataka (all the brand's cities are in Karnataka)."
+        out.append(reason("CITY_STATE_MISMATCH", "blocking", "on_hold", "A", detail=detail,
                           location=", ".join(x for x in (city, state) if x), allowed=", ".join(allowed)))
     elif city and d["pin_ok"] and d["pin_city"] != city:
         out.append(reason("CITY_PIN_MISMATCH", "blocking", "on_hold", "A", city=city, pin=pin, pin_city=d["pin_city"]))

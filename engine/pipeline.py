@@ -42,9 +42,7 @@ def _completeness(app: dict) -> int:
 def find_duplicates(apps: list[dict]) -> dict[str, str]:
     """dup app_id -> kept app_id (same name + pin; keep the most complete, then the earliest row)."""
     groups: dict[tuple, list[dict]] = {}
-    for a in apps:
-        if a.get("withdrawn"):
-            continue
+    for a in apps:  # withdrawn applicants stay in: their copies must not take their place
         key = (_norm_name(a.get("name")), a.get("pin"))
         if key[0] and key[1]:
             groups.setdefault(key, []).append(a)
@@ -341,12 +339,15 @@ def _move_up(app, d, sc, res, alloc, state, territory, stores, approved_pins) ->
     tid = d["territory_id"]
     if res.get("lost_on") == "slots":
         approved_ids = res["approved_ids"]
-        last = approved_ids[-1]
-        last_total = state[last]["score"]["total"]
-        gap = round(last_total - sc["total"], 1)
         line = [aid for aid, r in sorted(alloc.items(), key=lambda kv: kv[1]["rank"])
                 if r.get("territory_id") == tid and r["decision"] == "Waitlisted" and r.get("lost_on") == "slots"]
         pos = line.index(app["app_id"]) + 1
+        if not approved_ids:  # the territory has no open slots at all
+            out.append(f"You are {ordinal(pos)} in line if the brand opens a slot in {tid}.")
+            return out
+        last = approved_ids[-1]
+        last_total = state[last]["score"]["total"]
+        gap = round(last_total - sc["total"], 1)
         out.append(f"You are {ordinal(pos)} in line if a slot in {tid} opens up (for example, if an approved partner withdraws).")
         inv_pts = next(r["points"] for r in sc["breakdown"] if r["factor"] == "investment_adequacy")
         need = gap + 0.1

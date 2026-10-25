@@ -313,3 +313,36 @@ def test_chat_comparison_names_deciding_factor(data, result):
 def test_chat_what_if_is_not_saved(data, result):
     out = _chat(data, result, "What if APP-012 found a ground floor space?")
     assert out["kind"] == "what_if" and "result" not in out
+
+
+# ---------------------------------------------------------------- regressions found with a second dataset
+def test_zero_slot_territory_waitlists_without_crashing(data):
+    ters = copy.deepcopy(data["territories"])
+    next(t for t in ters if t["territory_id"] == "TER-06")["slots"] = 0
+    r = pipeline.run_all(data["applications"], ters, data["stores"], today=TODAY)
+    for aid in ("APP-016", "APP-017"):
+        rec = r["records"][aid]
+        assert rec["decision"] == "Waitlisted" and "WAITLIST_NO_SLOTS" in codes(rec) and rec["move_up"]
+    assert r["invariant_errors"] == []
+
+
+def test_withdrawn_applicant_keeps_duplicate_closed(data, result):
+    out = _chat(data, result, "APP-003 has withdrawn")  # APP-021 is a duplicate of APP-003
+    assert out["result"]["records"]["APP-021"]["decision"] == "Not approved"
+    assert "DUPLICATE_APPLICANT" in codes(out["result"]["records"]["APP-021"])
+
+
+def test_wrong_state_message_names_the_state():
+    from engine.derive import derive as _derive
+    from engine.validate import validate as _validate
+    app = {"app_id": "X", "city": "Mangaluru", "state": "Kerala", "pin": "575005", "investment": 30, "investment_status": "ok",
+           "space": "Rented", "size": 400, "size_status": "ok", "floor": "Ground", "experience": 2, "experience_status": "ok",
+           "launch": 3, "launch_status": "ok", "language": "English", "business": "", "notes": ""}
+    d = _derive(app, {}, [])
+    r = next(x for x in _validate(app, d, text_signals.keyword_signals("", "")) if x["code"] == "CITY_STATE_MISMATCH")
+    assert "Kerala" in r["sentence"] and "Mangaluru is in Karnataka" in r["sentence"]
+
+
+def test_family_funding_evidence_is_whole_phrase():
+    s = text_signals.keyword_signals("Homemaker", "Father will give the money after selling our land")
+    assert s["funding_status"] == "arranging" and s["funding_evidence"].lower().startswith("father will give")

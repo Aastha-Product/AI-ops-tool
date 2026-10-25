@@ -24,7 +24,7 @@ TEMPLATES: dict[str, dict[str, str]] = {
         "fix": "Confirm the store location: is it in {city}, or in {pin_city} at pin {pin}?",
     },
     "CITY_STATE_MISMATCH": {
-        "sentence": "The location '{location}' is not one of the brand's allowed cities ({allowed}, Karnataka).",
+        "sentence": "{detail}",
         "fix": "Confirm the city and state of the proposed store.",
     },
     "SPACE_UNRECOGNISED": {
@@ -145,6 +145,10 @@ TEMPLATES: dict[str, dict[str, str]] = {
     },
     "WAITLIST_PIN": {
         "sentence": "{winner} ranked higher for the same pin {pin} ({winner_score} vs {score} points). Only one store is allowed per pin.{also}",
+        "fix": "",
+    },
+    "WAITLIST_NO_SLOTS": {
+        "sentence": "{tid} has no open slots right now (0 in the Territories sheet), so no store can be approved there yet. Ranked {rank} of {n} eligible applicants.",
         "fix": "",
     },
     "WAITLIST_SLOTS": {
