@@ -80,6 +80,10 @@ def test_export_and_template_are_xlsx():
     assert r.status_code == 200 and r.content[:2] == b"PK"
     t = client.get("/api/template")
     assert t.status_code == 200 and t.content[:2] == b"PK"
+    wb = openpyxl.load_workbook(io.BytesIO(r.content))
+    assert "Follow-up emails" in wb.sheetnames
+    rows = list(wb["Follow-up emails"].iter_rows(min_row=2, values_only=True))
+    assert len(rows) == j["result"]["counts"]["On hold"] and all(row[4].startswith("Your franchise application") for row in rows)
 
 
 def test_sample_file_download_has_expected_results_and_uploads():

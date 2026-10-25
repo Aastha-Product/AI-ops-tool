@@ -445,6 +445,32 @@ svg.chart:hover [data-tip] { opacity: .5; } svg.chart [data-tip]:hover { opacity
   background: linear-gradient(135deg, color-mix(in srgb, #f59e0b 13%, var(--surface)), color-mix(in srgb, #f43f5e 8%, var(--surface))); border: 1px solid color-mix(in srgb, #f59e0b 30%, transparent); }
 .opp svg.i { color: var(--amber); margin-top: 2px; } .opp b { color: var(--text); }
 
+
+/* ------------------------------------------------------------------ follow-up email (Gmail draft) */
+.modal-back { position: fixed; inset: 0; background: rgba(15,23,42,.45); z-index: 80; display: grid; place-items: center; padding: 16px; }
+.modal-back[hidden] { display: none; }
+.modal { width: min(660px, 100%); max-height: calc(100vh - 32px); display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow-lg); overflow: hidden; animation: pk-in .14s ease-out; }
+.modal-h { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+.modal-h b { display: block; font-size: 15px; } .modal-h .m-sub { font-size: 12.5px; color: var(--muted); }
+.modal-h .right { margin-left: auto; }
+.mail-ico { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; flex: none; background: linear-gradient(135deg, #ea4335, #fbbc05 40%, #34a853 70%, #4285f4); }
+.mail-ico svg.i { stroke: #fff; width: 18px; height: 18px; }
+.modal-b { padding: 14px 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.modal-b label { display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: var(--muted); font-weight: 600; }
+.modal-b input, .modal-b textarea { font: inherit; font-size: 13.5px; color: var(--text); background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; }
+.modal-b textarea { resize: vertical; min-height: 280px; line-height: 1.55; }
+.modal-b input:focus, .modal-b textarea:focus { outline: none; border-color: var(--indigo); box-shadow: 0 0 0 3px color-mix(in srgb, var(--indigo) 16%, transparent); }
+.modal-b .hint { font-size: 12px; color: var(--muted); font-weight: 400; }
+.modal-f { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 12px 16px; border-top: 1px solid var(--border); }
+.modal-f .note { font-size: 12px; color: var(--muted); flex-basis: 100%; }
+#mail-copy { margin-left: auto; }
+.todo li .t-body { min-width: 0; flex: 1; }
+.mailbtn { flex: none; align-self: center; }
+.mailbtn.done { color: var(--ok); border-color: var(--ok-bd); }
+.mailcard { display: flex; gap: 12px; align-items: center; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); margin-bottom: 14px; }
+.mailcard b { display: block; color: var(--text); } .mailcard span.m-sub { font-size: 12.5px; color: var(--muted); }
+.mailcard .btn { margin-left: auto; flex: none; }
+
 /* ------------------------------------------------------------------ responsive */
 @media (max-width: 1280px) {
   .assistant { position: fixed; right: 0; top: 0; box-shadow: var(--shadow-lg); z-index: 50; }
@@ -475,6 +501,8 @@ svg.chart:hover [data-tip] { opacity: .5; } svg.chart [data-tip]:hover { opacity
   .profile { flex-wrap: wrap; } .p-nav { margin-left: 0; }
   .search input { width: 100%; } .search { flex: 1; }
   .picker, .pk-trigger { width: 100%; }
+  .mailcard { flex-wrap: wrap; } .mailcard .btn { margin-left: 0; width: 100%; justify-content: center; }
+  #mail-copy { margin-left: 0; }
   .dfilters select.input { flex: 1; min-width: 0; } .dfilters .legend-wrap { margin-left: 0; width: 100%; }
   .urow { grid-template-columns: 84px minmax(0, 1fr) 66px; }
   .topbar h1 { font-size: 16px; }
@@ -523,6 +551,18 @@ svg.chart:hover [data-tip] { opacity: .5; } svg.chart [data-tip]:hover { opacity
   </aside>
 </div>
 <div class="backdrop" id="backdrop"></div>
+<div class="modal-back" id="mail-modal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mail-title">
+    <div class="modal-h"><span class="mail-ico" id="mail-ico"></span><div><b id="mail-title">Follow-up email</b><span class="m-sub" id="mail-sub"></span></div>
+      <div class="right"><button class="btn icon ghost" id="mail-close" aria-label="Close"></button></div></div>
+    <div class="modal-b">
+      <label>To <span class="hint" id="mail-to-hint"></span><input id="mail-to" type="email" placeholder="applicant@example.com" autocomplete="off"></label>
+      <label>Subject<input id="mail-subject" autocomplete="off"></label>
+      <label>Message<textarea id="mail-body" rows="16"></textarea></label>
+    </div>
+    <div class="modal-f"><span class="note">Opens a Gmail draft you can review and send. Nothing is sent automatically.</span>
+      <button class="btn" id="mail-copy"></button><button class="btn" id="mail-other"></button><button class="btn primary" id="mail-gmail"></button></div>
+  </div></div>
 <div class="toast" id="toast" role="status"></div>
 <div class="tip" id="tip" role="tooltip"></div>
 <input type="file" id="file" accept=".xlsx,.xlsm" hidden>
@@ -561,6 +601,9 @@ const ICONS = {
   shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
   arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
   chevdown: '<path d="M6 9l6 6 6-6"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6.5l8.5 6 8.5-6"/>',
+  copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/>',
+  external: '<path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/>',
 };
 const ic = (n, cls = "") => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ""}</svg>`;
 
@@ -577,7 +620,7 @@ const DEC_ICON = { Approved: "check", Waitlisted: "clock", "On hold": "pause", "
 const SEV = { blocking: ["block", "Blocking issue"], decision: ["flag", "Decision"], warning: ["alert", "Warning"], info: ["info", "Note"] };
 let S = { view: "upload", session: null, original: null, result: null, summary: null, warnings: [], fileName: null,
           messages: [], changeLog: [], selected: null, filters: { dec: "", ter: "", q: "" }, sort: { key: "", dir: 1 },
-          tab: "overview", assistant: window.innerWidth > 1280 };
+          tab: "overview", assistant: window.innerWidth > 1280, mailTo: {}, drafted: {} };
 let META = null, BUSY = false;
 
 // ---------------------------------------------------------------- utilities
@@ -617,6 +660,7 @@ function applyLoad(j) {
   S.session = j.session; S.original = JSON.parse(JSON.stringify(j.session)); S.result = j.result; S.summary = j.summary;
   S.warnings = j.warnings; S.fileName = j.file_name; S.messages = []; S.changeLog = []; S.selected = null;
   S.filters = { dec: "", ter: "", q: "" }; S.sort = { key: "", dir: 1 }; S.tab = "overview"; S.dash = { ter: "", pin: "", tier: "" };
+  S.mailTo = {}; S.drafted = {};
   S.view = j.summary.applications ? "dashboard" : "upload";
 }
 async function loadSample() {
@@ -907,7 +951,9 @@ function viewDashboard() {
     <div class="card"><div class="card-h"><h3>Needs follow-up</h3><span class="sub">${holds.length} on hold</span>${holds.length ? `<div class="right"><button class="btn sm ghost" data-filter="On hold">View all</button></div>` : ""}</div>`;
   h += holds.length ? `<ul class="todo">${holds.slice(0, 5).map((r) => {
       const fix = (r.reasons.find((x) => x.severity === "blocking" && x.fix) || {}).fix || r.headline;
-      return `<li data-app="${esc(r.app_id)}">${avatarHtml(r.name, r.app_id)}<div style="min-width:0"><span class="t-id">${esc(r.name || r.app_id)}</span> <span class="muted mono">${esc(r.app_id)}</span><div class="t-fix clamp">${esc(fix)}</div></div></li>`;
+      const done = (S.drafted || {})[r.app_id];
+      return `<li data-app="${esc(r.app_id)}">${avatarHtml(r.name, r.app_id)}<div class="t-body"><span class="t-id">${esc(r.name || r.app_id)}</span> <span class="muted mono">${esc(r.app_id)}</span><div class="t-fix clamp">${esc(fix)}</div></div>
+        ${r.email_draft ? `<button class="btn sm mailbtn ${done ? "done" : ""}" data-mail="${esc(r.app_id)}" title="Draft a follow-up email in Gmail">${ic(done ? "check" : "mail")}${done ? "Drafted" : "Email"}</button>` : ""}</li>`;
     }).join("")}</ul>` : `<div class="empty">${ic("check")}<div>Nothing waiting on applicants.</div></div>`;
   h += `</div></div>`;
   h += `<div class="card"><div class="card-h"><h3>Territory capacity</h3><span class="sub">slots filled · one store per pin code, always</span></div><div class="card-b"><div class="ters">`;
@@ -1001,6 +1047,43 @@ function viewApplicant() {
 }
 const logFor = (r) => S.changeLog.filter((e) => e.affected.includes(r.app_id));
 
+// ---------------------------------------------------------------- follow-up email (opens a Gmail compose draft; never sends)
+const fmtIso = (iso) => { try { return new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }); } catch (e) { return iso; } };
+let MAIL_ID = null;
+function openMail(id) {
+  const r = S.result && S.result.records[id];
+  if (!r || !r.email_draft) return;
+  MAIL_ID = id; S.mailTo = S.mailTo || {};
+  const to = S.mailTo[id] || r.email || r.email_draft.to || "";
+  $("mail-sub").textContent = `${id} · ${r.name || ""} · On hold · reply by ${fmtIso(r.email_draft.deadline)}`;
+  $("mail-to").value = to;
+  $("mail-to-hint").textContent = to ? "" : "(no email in the uploaded file; type the applicant's address)";
+  $("mail-subject").value = r.email_draft.subject;
+  $("mail-body").value = r.email_draft.body;
+  $("mail-modal").hidden = false;
+  (to ? $("mail-gmail") : $("mail-to")).focus();
+}
+function closeMail() { $("mail-modal").hidden = true; MAIL_ID = null; }
+function mailFields() {
+  const to = $("mail-to").value.trim();
+  if (MAIL_ID) { S.mailTo = S.mailTo || {}; S.mailTo[MAIL_ID] = to; }
+  return { to, subject: $("mail-subject").value, body: $("mail-body").value };
+}
+function markDrafted() { if (MAIL_ID) { S.drafted = S.drafted || {}; S.drafted[MAIL_ID] = new Date().toISOString(); } }
+function gmailUrl(m) {
+  return "https://mail.google.com/mail/?view=cm&fs=1&tf=1" + (m.to ? "&to=" + encodeURIComponent(m.to) : "") +
+    "&su=" + encodeURIComponent(m.subject) + "&body=" + encodeURIComponent(m.body);
+}
+function mailAction(kind) {
+  const m = mailFields();
+  if (kind === "gmail") { window.open(gmailUrl(m), "_blank", "noopener"); markDrafted(); closeMail(); render(); toast("Draft opened in Gmail. Review it and press Send there."); }
+  else if (kind === "other") { location.href = "mailto:" + encodeURIComponent(m.to) + "?subject=" + encodeURIComponent(m.subject) + "&body=" + encodeURIComponent(m.body); markDrafted(); closeMail(); render(); }
+  else if (kind === "copy") {
+    const text = `${m.to ? "To: " + m.to + "\n" : ""}Subject: ${m.subject}\n\n${m.body}`;
+    (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => toast("Email copied to the clipboard."), () => toast("Copy failed; select the text and copy it.", true));
+  }
+}
+
 // ---------------------------------------------------------------- applicant picker (searchable, keyboard friendly)
 const PK = { open: false, idx: 0, items: [], dec: "" };
 function pickerHtml(r) {
@@ -1045,7 +1128,14 @@ function detailTab(r) {
     const groups = ["blocking", "decision", "warning", "info"];
     let h = `<div class="grid g-2"><div><div class="sec-title">Why this decision</div><ul class="reasons">`;
     for (const g of groups) for (const x of r.reasons.filter((x) => x.severity === g)) h += `<li class="r-${g}" title="${SEV[g][1]}">${ic(SEV[g][0])}<span>${esc(x.sentence)}</span></li>`;
-    h += `</ul></div><div><div class="sec-title">Next steps</div><ol class="steps-list">${r.next_steps.map((n) => `<li>${esc(n)}</li>`).join("")}</ol>`;
+    h += `</ul></div><div>`;
+    if (r.email_draft) {
+      const done = (S.drafted || {})[r.app_id];
+      h += `<div class="mailcard"><span class="mail-ico">${ic("mail")}</span><div><b>${done ? "Follow-up email drafted" : "Follow-up email ready"}</b>
+        <span class="m-sub">Lists the issues, what to update and the reply-by date (${esc(fmtIso(r.email_draft.deadline))}).</span></div>
+        <button class="btn primary sm" data-mail="${esc(r.app_id)}">${ic("mail")}${done ? "Open again" : "Draft in Gmail"}</button></div>`;
+    }
+    h += `<div class="sec-title">Next steps</div><ol class="steps-list">${r.next_steps.map((n) => `<li>${esc(n)}</li>`).join("")}</ol>`;
     if (r.summary_line) h += `<div class="callout">${ic("info")}<span>${esc(r.summary_line)}</span></div>`;
     return h + `</div></div>`;
   }
@@ -1180,6 +1270,14 @@ document.addEventListener("click", (ev) => {
     return;
   }
   if (ev.target.closest("#pk-trigger")) { openPicker(); return; }
+  if (!$("mail-modal").hidden) {
+    const b = ev.target.closest("#mail-gmail,#mail-other,#mail-copy,#mail-close");
+    if (b) { if (b.id === "mail-close") closeMail(); else mailAction(b.id.slice(5)); return; }
+    if (ev.target.id === "mail-modal") { closeMail(); return; }
+    return;
+  }
+  const mb = ev.target.closest("[data-mail]");
+  if (mb) { ev.stopPropagation(); openMail(mb.dataset.mail); return; }
   const t = ev.target.closest("[data-view],[data-app],[data-prompt],[data-action],[data-filter],[data-ter],[data-sort],[data-tab],#drop,#menu,#as-close,#backdrop,#reset,#clear");
   if (!t || t.disabled) return;
   if (t.dataset.view) go(t.dataset.view);
@@ -1204,6 +1302,7 @@ document.addEventListener("click", (ev) => {
 document.addEventListener("keydown", (ev) => {
   if (ev.target.id === "drop" && (ev.key === "Enter" || ev.key === " ")) { ev.preventDefault(); $("file").click(); }
   if (ev.target.id === "chat-input" && ev.key === "Enter" && !ev.shiftKey) { ev.preventDefault(); $("chat-form").requestSubmit(); }
+  if (!$("mail-modal").hidden && ev.key === "Escape") { closeMail(); return; }
   if (PK.open && ev.target.id === "pk-q") {
     if (ev.key === "ArrowDown" || ev.key === "ArrowUp") { ev.preventDefault(); PK.idx += ev.key === "ArrowDown" ? 1 : -1; renderPickList(); return; }
     if (ev.key === "Enter") { ev.preventDefault(); const id = PK.items[PK.idx]; closePicker(); if (id) go("applicant", { selected: id }); return; }
@@ -1248,6 +1347,8 @@ window.addEventListener("resize", () => syncAssistant());
 (async function init() {
   $("brand-mark").innerHTML = ic("store"); $("as-ico").innerHTML = ic("spark"); $("menu").innerHTML = ic("menu");
   $("as-close").innerHTML = ic("x"); $("send").innerHTML = ic("send");
+  $("mail-ico").innerHTML = ic("mail"); $("mail-close").innerHTML = ic("x");
+  $("mail-gmail").innerHTML = ic("external") + "Open in Gmail"; $("mail-other").innerHTML = ic("mail") + "Other email app"; $("mail-copy").innerHTML = ic("copy") + "Copy";
   restore();
   if (window.innerWidth <= 1280) S.assistant = false;  // overlay: start closed on smaller screens
   try { META = await (await api("/api/meta")).json(); } catch (e) { META = { llm_available: false }; }

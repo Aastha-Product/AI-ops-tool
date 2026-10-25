@@ -14,6 +14,7 @@ from . import refdata, text_signals
 from .allocate import allocate_territory, describe_rank, sort_key
 from .derive import build_territory_index, derive
 from .explain import fmt_lakh, fmt_num, join_human, ordinal, reason, sort_reasons
+from .messages import on_hold_email
 from .gates import funding_short_alternative, gate_b, gate_c_funding, open_pins, pre_status
 from .onboarding import add_months, build_checklist, build_training, fmt_date, timeline_plan
 from .scoring import investment_points, score
@@ -242,6 +243,7 @@ def run_all(applications: list[dict], territories: list[dict], stores: list[dict
         else:
             rec["checklist"], rec["training"], rec["summary_line"] = None, None, None
         rec["next_steps"] = _next_steps(rec, today)
+        rec["email_draft"] = on_hold_email(rec, today) if decision == "On hold" else None
         records[aid] = rec
 
     result = {
@@ -262,6 +264,7 @@ def _base_record(app: dict, d: dict, sig: dict, sc: dict | None) -> dict:
     return {
         "app_id": app["app_id"],
         "name": app.get("name"),
+        "email": app.get("email") or "",
         "city": app.get("city"),
         "state": app.get("state"),
         "pin": app.get("pin"),

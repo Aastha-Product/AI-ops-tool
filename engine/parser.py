@@ -36,6 +36,7 @@ APP_HEADERS = {
     "launch": ["target launch months", "target launch", "launch months", "launch"],
     "language": ["preferred language", "training language", "language"],
     "notes": ["notes from applicant", "notes", "applicant notes", "remarks", "comments"],
+    "email": ["email", "email id", "email address", "e mail", "e mail id", "applicant email", "contact email", "mail id"],
 }
 TER_HEADERS = {
     "territory_id": ["territory id", "territory", "id"],
@@ -57,7 +58,7 @@ STORE_HEADERS = {
 APP_KEYWORDS = [
     ("city_state_pin", ("city", "pin")), ("investment", ("invest",)), ("experience", ("experience",)),
     ("business", ("business",)), ("size", ("size",)), ("space", ("space",)), ("floor", ("floor",)),
-    ("launch", ("launch",)), ("language", ("language",)), ("notes", ("note",)), ("pin", ("pin",)),
+    ("launch", ("launch",)), ("language", ("language",)), ("notes", ("note",)), ("email", ("mail",)), ("pin", ("pin",)),
     ("app_id", ("application",)), ("name", ("name",)),
 ]
 TER_KEYWORDS = [("pins", ("pin",)), ("slots", ("slot",)), ("tier", ("tier",)), ("priority", ("priorit",)),
@@ -361,6 +362,8 @@ def _parse_application(cells: dict[str, Any], excel_row: int) -> dict:
     app["space"] = canon_space(cells.get("space"))
     app["floor"] = canon_floor(cells.get("floor"))
     app["language"] = canon_language(cells.get("language"))
+    email = (clean_text(cells.get("email")) or "").strip()
+    app["email"] = email if "@" in email and " " not in email else ""
     app["parse_issues"] = issues
     app["withdrawn"] = False
     app["funds_confirmed"] = False

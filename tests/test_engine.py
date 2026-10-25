@@ -346,3 +346,43 @@ def test_wrong_state_message_names_the_state():
 def test_family_funding_evidence_is_whole_phrase():
     s = text_signals.keyword_signals("Homemaker", "Father will give the money after selling our land")
     assert s["funding_status"] == "arranging" and s["funding_evidence"].lower().startswith("father will give")
+
+
+# ---------------------------------------------------------------- follow-up emails
+def test_on_hold_applicants_get_followup_email(result):
+    for r in result["records"].values():
+        if r["decision"] == "On hold":
+            d = r["email_draft"]
+            assert r["app_id"] in d["subject"] and d["body"].startswith(f"Dear {r['name']},")
+            for x in r["reasons"]:
+                if x["severity"] == "blocking" and x["fix"]:
+                    assert x["fix"].split(" (")[0][:30] in d["body"]
+            assert "resubmit" in d["body"] and "(read by" not in d["body"]
+        else:
+            assert r["email_draft"] is None
+
+
+def test_followup_email_names_problem_fix_and_deadline(result):
+    d = result["records"]["APP-007"]["email_draft"]
+    assert "size (sq ft) is not given" in d["body"] and "Share the space size (sq ft)." in d["body"]
+    assert d["deadline"] == "2026-11-24" and "24 Nov 2026" in d["body"]
+
+
+def test_optional_email_column_is_read():
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Applications"
+    ws.append(["Application ID", "Applicant name", "City", "State", "Pin code", "Investment capacity (₹ lakh)",
+               "Retail experience (years)", "Space available", "Space size (sq ft)", "Floor", "Preferred language", "Email ID"])
+    ws.append(["APP-201", "Test Person", "Mysuru", "Karnataka", 570002, 30, 3, "Rented", None, "Ground", "Kannada", "test.person@example.com"])
+    ws.append(["APP-202", "No Mail", "Mysuru", "Karnataka", 570004, 30, 3, "Rented", 400, "Ground", "Kannada", "not an email"])
+    ts = wb.create_sheet("Territories")
+    ts.append(["Territory ID", "City", "State", "Pin codes covered", "City tier", "Open slots", "Priority"])
+    ts.append(["TER-01", "Mysuru", "Karnataka", "570002, 570004", "Tier 2", 1, "High"])
+    buf = io.BytesIO()
+    wb.save(buf)
+    p = parser.read_workbook(buf.getvalue())
+    a1, a2 = p["applications"]
+    assert a1["email"] == "test.person@example.com" and a2["email"] == ""
+    r = pipeline.run_all(p["applications"], p["territories"], p["stores"], today=TODAY)
+    assert r["records"]["APP-201"]["email_draft"]["to"] == "test.person@example.com"

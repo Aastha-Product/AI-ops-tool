@@ -119,6 +119,16 @@ decision + reason each, checklist + training for every approval) are checked aft
 - "What if …" runs the same simulation without saving. Unknown IDs: "There is no APP-099 in the uploaded file."
 - **Reset to uploaded file** drops all chat updates; the change log is shown on each applicant page.
 
+## Follow-up emails for On hold applicants
+
+Every On hold applicant gets a ready-to-send email built from the stored reasons: what we found, exactly
+what to update, and a reply-by date (30 days). On the dashboard's "Needs follow-up" list and on the
+applicant profile, **Draft in Gmail** opens Gmail's compose window with the email filled in; you review it and
+press Send. Nothing is sent automatically, and no Google account setup or API key is needed. "Other email app"
+uses a mailto link, and "Copy" puts the text on the clipboard. The Excel export has a "Follow-up emails" sheet
+with every draft for mail merge. If the uploaded Applications sheet has an optional **Email** column, the
+recipient is filled in; otherwise type it in the draft window (it is remembered for the session).
+
 ## Data
 
 - `data/pin_coords.csv` – built once by `scripts/build_pin_coords.py` from the Department of Posts All India Pincode

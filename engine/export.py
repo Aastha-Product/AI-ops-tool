@@ -4,7 +4,7 @@ from __future__ import annotations
 import io
 
 from openpyxl import Workbook
-from openpyxl.styles import Font, PatternFill
+from openpyxl.styles import Alignment, Font, PatternFill
 
 FILLS = {
     "Approved": PatternFill("solid", fgColor="D1FAE5"),
@@ -63,6 +63,13 @@ def export_xlsx(result: dict, change_log: list[dict] | None = None) -> bytes:
            [[r["app_id"], r["training"]["track"], r["training"]["language"], r["training"]["duration_text"],
              r["training"]["window"], r["training"]["shadow_store"]["text"] if r["training"]["shadow_store"] else "",
              "; ".join(r["training"]["modules"])] for r in recs if r["training"]], [10, 12, 10, 26, 28, 60, 100])
+    ws = _sheet(wb, "Follow-up emails", ["ID", "Name", "Email", "Reply by", "Subject", "Body"],
+                [[r["app_id"], r["name"], r.get("email") or "", r["email_draft"]["deadline"], r["email_draft"]["subject"],
+                  r["email_draft"]["body"]] for r in recs if r.get("email_draft")] or [["", "No applicants on hold", "", "", "", ""]],
+                [10, 20, 26, 12, 50, 100])
+    for row in ws.iter_rows(min_row=2, min_col=6, max_col=6):
+        for c in row:
+            c.alignment = Alignment(wrap_text=True, vertical="top")
     _sheet(wb, "Change log", ["Time", "Message", "Applied", "Decision changes"],
            [[e.get("time"), e.get("message"), "; ".join(e.get("updates", [])), "; ".join(e.get("changes", []))]
             for e in (change_log or [])] or [["", "No chat updates", "", ""]], [10, 60, 80, 60])
