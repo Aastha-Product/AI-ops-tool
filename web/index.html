@@ -18,8 +18,19 @@
   --border: #e7e9f0; --border-strong: #d4d8e3;
   --text: #0f172a; --text-2: #394155; --muted: #6b7386; --faint: #9aa1b3;
   --brand: #4f46e5; --brand-hover: #4338ca; --brand-soft: #eef0ff; --brand-ink: #ffffff;
-  --grad: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-  --grad-dark: linear-gradient(150deg, #1e1b4b 0%, #312e81 55%, #5b21b6 100%);
+  --grad: linear-gradient(135deg, #4f46e5 0%, #7c3aed 55%, #c026d3 100%);
+  --grad-dark: linear-gradient(150deg, #1e1b4b 0%, #312e81 50%, #6d28d9 100%);
+  /* accent family: indigo · violet · teal · amber · rose · sky */
+  --indigo: #4f46e5; --violet: #7c3aed; --teal: #0d9488; --amber: #d97706; --rose: #e11d48; --sky: #0284c7;
+  --g-indigo: linear-gradient(135deg, #6366f1, #8b5cf6);
+  --g-teal: linear-gradient(135deg, #14b8a6, #0ea5e9);
+  --g-amber: linear-gradient(135deg, #f59e0b, #f97316);
+  --g-rose: linear-gradient(135deg, #f43f5e, #ec4899);
+  --g-green: linear-gradient(135deg, #10b981, #14b8a6);
+  --g-sky: linear-gradient(135deg, #0ea5e9, #6366f1);
+  --page-glow: radial-gradient(900px 480px at -5% -10%, rgba(99,102,241,.13), transparent 60%),
+               radial-gradient(800px 460px at 105% 0%, rgba(20,184,166,.11), transparent 60%),
+               radial-gradient(700px 420px at 60% 110%, rgba(244,63,94,.07), transparent 60%);
   --side-bg: #ffffff; --side-text: #4b5468; --side-hover: #f3f4f8; --side-active: #eef0ff; --side-active-text: #4338ca;
   /* chart marks: validated with the dataviz palette checker (light surface #ffffff) */
   --c-ok: #12a15e; --c-wait: #c27a0a; --c-hold: #2e7fe0; --c-no: #d92d20;
@@ -38,7 +49,11 @@
     --border: #232b44; --border-strong: #323c5c;
     --text: #e8ebf4; --text-2: #c2c8d8; --muted: #8b93a9; --faint: #646d86;
     --brand: #8b8cf8; --brand-hover: #a5a6ff; --brand-soft: #1f2350; --brand-ink: #0b0f1a;
-    --grad: linear-gradient(135deg, #5b5bf0 0%, #8b5cf6 100%);
+    --grad: linear-gradient(135deg, #5b5bf0 0%, #8b5cf6 55%, #d946ef 100%);
+    --indigo: #818cf8; --violet: #a78bfa; --teal: #2dd4bf; --amber: #fbbf24; --rose: #fb7185; --sky: #38bdf8;
+    --page-glow: radial-gradient(900px 480px at -5% -10%, rgba(99,102,241,.22), transparent 60%),
+                 radial-gradient(800px 460px at 105% 0%, rgba(20,184,166,.16), transparent 60%),
+                 radial-gradient(700px 420px at 60% 110%, rgba(244,63,94,.10), transparent 60%);
     --side-bg: #0f1424; --side-text: #9aa3bb; --side-hover: rgba(255,255,255,.04); --side-active: #1f2350; --side-active-text: #c7c9ff;
     /* validated against the dark chart surface #141b2d */
     --c-ok: #22a868; --c-wait: #c98315; --c-hold: #3b8fe0; --c-no: #e5574b;
@@ -51,7 +66,7 @@
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; }
-body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
+body { margin: 0; background: var(--page-glow), var(--bg); background-attachment: fixed; color: var(--text); font: 14px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
 button, input, select, textarea { font: inherit; color: inherit; }
 a { color: var(--brand); text-decoration: none; }
 :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 6px; }
@@ -71,7 +86,8 @@ svg.i { width: 16px; height: 16px; flex: none; stroke: currentColor; fill: none;
 .nav-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); padding: 14px 10px 6px; font-weight: 600; }
 .nav button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; margin: 1px 0; border: 0; background: none; color: var(--side-text); border-radius: 10px; cursor: pointer; text-align: left; font-weight: 500; }
 .nav button:hover { background: var(--side-hover); color: var(--text); }
-.nav button.active { background: var(--side-active); color: var(--side-active-text); font-weight: 600; }
+.nav button svg.i { color: var(--nc, currentColor); }
+.nav button.active { background: color-mix(in srgb, var(--nc, var(--indigo)) 14%, transparent); color: var(--text); font-weight: 650; box-shadow: inset 3px 0 0 var(--nc, var(--indigo)); }
 .nav button:disabled { opacity: .4; cursor: default; background: none; }
 .nav .count { margin-left: auto; font-size: 11.5px; background: var(--surface-3); color: var(--text-2); padding: 0 8px; border-radius: 999px; font-weight: 600; }
 .main { min-width: 0; display: flex; flex-direction: column; }
@@ -89,8 +105,8 @@ svg.i { width: 16px; height: 16px; flex: none; stroke: currentColor; fill: none;
 /* ------------------------------------------------------------------ primitives */
 .btn { display: inline-flex; align-items: center; gap: 7px; padding: 7px 13px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--surface); color: var(--text-2); font-weight: 550; cursor: pointer; white-space: nowrap; box-shadow: var(--shadow-sm); transition: background .12s, border-color .12s; }
 .btn:hover { background: var(--surface-2); border-color: var(--faint); }
-.btn.primary { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); }
-.btn.primary:hover { background: var(--brand-hover); border-color: var(--brand-hover); }
+.btn.primary { background: var(--g-indigo); border-color: transparent; color: #fff; box-shadow: 0 6px 16px rgba(99,102,241,.28); }
+.btn.primary:hover { filter: brightness(1.08); background: var(--g-indigo); border-color: transparent; }
 .btn.ghost { border-color: transparent; background: none; box-shadow: none; }
 .btn.ghost:hover { background: var(--surface-3); }
 .btn.sm { padding: 5px 10px; font-size: 13px; }
@@ -233,15 +249,17 @@ td.wrap { white-space: normal; min-width: 220px; max-width: 420px; }
 .hero p { margin: 0 0 18px; color: var(--muted); }
 .drop { border: 1.5px dashed var(--border-strong); border-radius: 14px; padding: 30px 20px; text-align: center; cursor: pointer; background: var(--surface-2); transition: border-color .12s, background .12s; }
 .drop:hover, .drop.over { border-color: var(--brand); background: var(--brand-soft); }
-.drop .d-ico { width: 46px; height: 46px; margin: 0 auto 10px; border-radius: 12px; background: var(--brand-soft); color: var(--brand); display: grid; place-items: center; }
+.drop .d-ico { width: 50px; height: 50px; margin: 0 auto 10px; border-radius: 14px; background: var(--g-teal); color: #fff; display: grid; place-items: center; box-shadow: 0 8px 20px rgba(20,184,166,.3); }
 .drop .d-ico svg.i { width: 22px; height: 22px; }
 .drop b { display: block; color: var(--text); } .drop span { font-size: 12.5px; color: var(--muted); }
 .how { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
-.how .card { padding: 16px; } .how .n { width: 26px; height: 26px; border-radius: 8px; background: var(--brand-soft); color: var(--brand); font-weight: 700; display: grid; place-items: center; margin-bottom: 10px; font-size: 13px; }
+.how .card { padding: 16px; } .how .n { width: 28px; height: 28px; border-radius: 9px; background: var(--g-indigo); color: #fff; font-weight: 700; display: grid; place-items: center; margin-bottom: 10px; font-size: 13px; }
+.how .card:nth-child(2) .n { background: var(--g-teal); } .how .card:nth-child(3) .n { background: var(--g-amber); }
 .how b { display: block; margin-bottom: 3px; } .how p { margin: 0; color: var(--muted); font-size: 13px; }
 .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; }
 .stats div { padding: 14px 18px; border-left: 1px solid var(--border); } .stats div:first-child { border-left: 0; }
-.stats b { display: block; font-size: 22px; font-weight: 700; letter-spacing: -.02em; } .stats span { font-size: 12.5px; color: var(--muted); }
+.stats b { display: block; font-size: 22px; font-weight: 700; letter-spacing: -.02em; }
+.stats div:nth-child(1) b { color: var(--indigo); } .stats div:nth-child(2) b { color: var(--teal); } .stats div:nth-child(3) b { color: var(--amber); } .stats div:nth-child(4) b { color: var(--rose); } .stats span { font-size: 12.5px; color: var(--muted); }
 .gate { padding: 16px; } .gate .g-ico { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; margin-bottom: 10px; }
 .gate b { display: block; margin-bottom: 4px; } .gate p { margin: 0; color: var(--text-2); font-size: 13px; }
 .weights div { display: grid; grid-template-columns: 210px 1fr 44px; gap: 12px; align-items: center; padding: 7px 0; font-size: 13px; }
@@ -255,7 +273,6 @@ td.wrap { white-space: normal; min-width: 220px; max-width: 420px; }
 .as-ico svg.i { stroke: #fff; }
 .as-h b { display: block; font-size: 14px; } .as-h span { font-size: 12px; color: var(--muted); }
 .as-h .right { margin-left: auto; display: flex; gap: 4px; }
-.as-ctl { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-bottom: 1px solid var(--border); font-size: 12.5px; color: var(--muted); }
 .switch { position: relative; width: 32px; height: 18px; flex: none; }
 .switch input { opacity: 0; width: 100%; height: 100%; position: absolute; margin: 0; cursor: pointer; }
 .switch span { position: absolute; inset: 0; border-radius: 999px; background: var(--border-strong); transition: background .15s; pointer-events: none; }
@@ -264,7 +281,7 @@ td.wrap { white-space: normal; min-width: 220px; max-width: 420px; }
 .switch input:disabled + span { opacity: .5; }
 .msgs { flex: 1; min-height: 0; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
 .msg { max-width: 92%; font-size: 13.5px; line-height: 1.55; }
-.msg.m-user { align-self: flex-end; background: var(--brand); color: var(--brand-ink); padding: 9px 13px; border-radius: 14px 14px 4px 14px; }
+.msg.m-user { align-self: flex-end; background: var(--g-indigo); color: #fff; padding: 9px 13px; border-radius: 14px 14px 4px 14px; }
 .msg.m-assistant { align-self: flex-start; background: var(--surface-2); border: 1px solid var(--border); padding: 10px 13px; border-radius: 14px 14px 14px 4px; color: var(--text-2); }
 .msg.m-assistant b { color: var(--text); }
 .msg p { margin: 0 0 6px; } .msg p:last-child { margin: 0; } .msg ul { margin: 4px 0 6px; padding-left: 18px; }
@@ -291,7 +308,7 @@ td.wrap { white-space: normal; min-width: 220px; max-width: 420px; }
 .toast.err { background: #b42318; } .toast.on { display: block; }
 
 /* ------------------------------------------------------------------ v3 visuals */
-.promo { margin-top: auto; border-radius: 16px; padding: 16px; background: var(--grad-dark); color: #e0e3ff; position: relative; overflow: hidden; }
+.promo { margin-top: auto; border-radius: 16px; padding: 16px; background: radial-gradient(160px 120px at 0% 100%, rgba(20,184,166,.35), transparent 70%), var(--grad-dark); color: #e0e3ff; position: relative; overflow: hidden; }
 .promo::after { content: ""; position: absolute; right: -34px; top: -34px; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, rgba(167,139,250,.55), transparent 70%); }
 .promo .p-ico { width: 34px; height: 34px; border-radius: 10px; background: rgba(255,255,255,.14); display: grid; place-items: center; margin-bottom: 10px; }
 .promo .p-ico svg.i { stroke: #fff; }
@@ -308,6 +325,7 @@ td.wrap { white-space: normal; min-width: 220px; max-width: 420px; }
 .me b { display: block; font-size: 13px; line-height: 1.2; } .me span { font-size: 11.5px; color: var(--muted); }
 .greet { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
 .greet h2 { margin: 0; font-size: 26px; letter-spacing: -.025em; font-weight: 700; }
+.greet h2 .hl { background: linear-gradient(90deg, var(--indigo), var(--violet) 45%, var(--teal)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .greet p { margin: 4px 0 0; color: var(--muted); }
 .greet .acts { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
 .kpi.kpi-hero { background: var(--grad); border-color: transparent; color: #fff; box-shadow: 0 12px 30px rgba(79,70,229,.30); }
@@ -343,7 +361,7 @@ svg.chart:hover [data-tip] { opacity: .5; } svg.chart [data-tip]:hover { opacity
 .donut-list li { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px dashed var(--border); font-size: 13px; cursor: pointer; color: var(--text-2); }
 .donut-list li:last-child { border-bottom: 0; } .donut-list li:hover { color: var(--text); }
 .donut-list b { margin-left: auto; color: var(--text); } .donut-list .pc { width: 40px; text-align: right; color: var(--muted); font-size: 12px; }
-.ai-card { background: var(--grad-dark); color: #e0e3ff; border: 0; position: relative; overflow: hidden; }
+.ai-card { background: radial-gradient(260px 180px at 0% 100%, rgba(20,184,166,.32), transparent 70%), var(--grad-dark); color: #e0e3ff; border: 0; position: relative; overflow: hidden; }
 .ai-card::after { content: ""; position: absolute; right: -50px; bottom: -50px; width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, rgba(167,139,250,.42), transparent 70%); pointer-events: none; }
 .ai-card .card-h { border-color: rgba(255,255,255,.1); } .ai-card h3 { color: #fff; } .ai-card .sub { color: #b9bdf0; }
 .ai-card .as-ico { background: rgba(255,255,255,.14); }
@@ -353,7 +371,7 @@ svg.chart:hover [data-tip] { opacity: .5; } svg.chart [data-tip]:hover { opacity
 .mini-av { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 11px; flex: none; }
 .who-row { display: flex; align-items: center; gap: 10px; }
 .tip { position: fixed; z-index: 70; pointer-events: none; background: #0f172a; color: #fff; font-size: 12.5px; padding: 6px 10px; border-radius: 8px; box-shadow: var(--shadow-lg); white-space: nowrap; display: none; }
-.cover { height: 84px; background: var(--grad); border-radius: var(--radius) var(--radius) 0 0; position: relative; overflow: hidden; }
+.cover { height: 84px; background: linear-gradient(120deg, #4f46e5 0%, #7c3aed 45%, #0ea5e9 80%, #14b8a6 100%); border-radius: var(--radius) var(--radius) 0 0; position: relative; overflow: hidden; }
 .cover::before { content: ""; position: absolute; right: 60px; top: -70px; width: 230px; height: 230px; border-radius: 50%; background: rgba(255,255,255,.09); }
 .cover::after { content: ""; position: absolute; right: -40px; top: 10px; width: 160px; height: 160px; border-radius: 50%; background: rgba(255,255,255,.07); }
 .profile.with-cover { padding-top: 0; position: relative; z-index: 1; }
@@ -362,6 +380,32 @@ svg.chart:hover [data-tip] { opacity: .5; } svg.chart [data-tip]:hover { opacity
 .ring { width: 96px; height: 96px; flex: none; margin-top: -34px; background: var(--surface); border-radius: 50%; padding: 4px; box-shadow: var(--shadow); }
 .ring svg { width: 100%; height: 100%; display: block; }
 .p-side { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+
+
+/* ------------------------------------------------------------------ v4 colour accents */
+.kpi { overflow: hidden; }
+.kpi::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: var(--kg, transparent); }
+.kpi.k-Approved { --kg: var(--g-green); --kt: #10b981; } .kpi.k-Waitlisted { --kg: var(--g-amber); --kt: #f59e0b; }
+.kpi.k-On-hold { --kg: var(--g-sky); --kt: #0ea5e9; } .kpi.k-Not-approved { --kg: var(--g-rose); --kt: #f43f5e; }
+.kpi[class*="k-"]:not(.kpi-hero) { background: linear-gradient(180deg, color-mix(in srgb, var(--kt) 9%, var(--surface)), var(--surface) 75%); }
+.kpi[class*="k-"]:not(.kpi-hero) .k-ico { background: var(--kg); color: #fff; box-shadow: 0 6px 14px color-mix(in srgb, var(--kt) 35%, transparent); }
+.kpi[class*="k-"]:not(.kpi-hero) .k-val { color: var(--text); }
+.kpi[class*="k-"]:not(.kpi-hero) .k-sub .up { background: color-mix(in srgb, var(--kt) 16%, transparent); color: var(--text); }
+.kpi.kpi-hero::after { content: ""; position: absolute; right: -40px; bottom: -50px; width: 150px; height: 150px; border-radius: 50%; background: rgba(255,255,255,.10); }
+.ter { position: relative; overflow: hidden; }
+.ter::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--tg, var(--g-indigo)); }
+.ter.p-High { --tg: var(--g-rose); } .ter.p-Medium { --tg: var(--g-amber); } .ter.p-Low { --tg: var(--g-teal); }
+.ter .bar > i { background: var(--tg, var(--g-indigo)); }
+.as-ico { background: linear-gradient(135deg, #14b8a6, #6366f1 60%, #8b5cf6); }
+.chip.live .dot { background: var(--teal); }
+.me .av { background: linear-gradient(135deg, #f59e0b, #f43f5e); }
+.brand-mark { background: linear-gradient(135deg, #6366f1, #8b5cf6 50%, #14b8a6); }
+.tabs button.on { color: var(--indigo); border-bottom-color: transparent; background-image: linear-gradient(90deg, var(--indigo), var(--teal)); background-size: 100% 2px; background-position: bottom; background-repeat: no-repeat; }
+.timeline .dot { border-color: var(--teal); } .timeline li.launch .dot { background: var(--g-amber); border-color: #f59e0b; }
+.steps-list li::before { background: var(--g-indigo); color: #fff; }
+.callout { background: linear-gradient(135deg, color-mix(in srgb, #6366f1 12%, var(--surface)), color-mix(in srgb, #14b8a6 10%, var(--surface))); }
+.sugg button:hover { border-color: var(--teal); }
+.composer form:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, #14b8a6 20%, transparent); }
 
 /* ------------------------------------------------------------------ responsive */
 @media (max-width: 1280px) {
@@ -429,10 +473,6 @@ svg.chart:hover [data-tip] { opacity: .5; } svg.chart [data-tip]:hover { opacity
       <div><b>Decision assistant</b><span>Ask why · give new facts · re-decide</span></div>
       <div class="right"><button class="btn icon ghost" id="as-close" aria-label="Close assistant"></button></div>
     </div>
-    <div class="as-ctl">
-      <label class="switch"><input type="checkbox" id="ai" aria-label="Use AI"><span></span></label>
-      <span id="ai-note">AI phrasing</span>
-    </div>
     <div class="msgs" id="msgs" aria-live="polite"></div>
     <div class="sugg" id="sugg"></div>
     <div class="composer">
@@ -487,11 +527,11 @@ const ic = (n, cls = "") => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidd
 
 // ---------------------------------------------------------------- state
 const VIEWS = [
-  { key: "upload", label: "Upload data", icon: "upload", title: "Upload data" },
-  { key: "dashboard", label: "Dashboard", icon: "grid", title: "Decision dashboard", needs: true },
-  { key: "applications", label: "Applications", icon: "list", title: "Applications", needs: true, count: true },
-  { key: "applicant", label: "Applicant profile", icon: "user", title: "Applicant profile", needs: true },
-  { key: "method", label: "How decisions work", icon: "book", title: "How decisions work" },
+  { key: "upload", label: "Upload data", icon: "upload", title: "Upload data", color: "var(--teal)" },
+  { key: "dashboard", label: "Dashboard", icon: "grid", title: "Decision dashboard", needs: true, color: "var(--indigo)" },
+  { key: "applications", label: "Applications", icon: "list", title: "Applications", needs: true, count: true, color: "var(--amber)" },
+  { key: "applicant", label: "Applicant profile", icon: "user", title: "Applicant profile", needs: true, color: "var(--rose)" },
+  { key: "method", label: "How decisions work", icon: "book", title: "How decisions work", color: "var(--sky)" },
 ];
 const DECISIONS = ["Approved", "Waitlisted", "On hold", "Not approved"];
 const DEC_ICON = { Approved: "check", Waitlisted: "clock", "On hold": "pause", "Not approved": "xcircle" };
@@ -529,7 +569,7 @@ async function api(path, opts = {}) {
   return r;
 }
 const postJSON = async (path, body) => (await api(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })).json();
-const useLLM = () => $("ai").checked;
+const useLLM = () => !!(META && META.llm_available);  // AI phrasing is used automatically when a key is configured
 const sessionBody = (extra = {}) => Object.assign({}, S.session, { use_llm: useLLM() }, extra);
 function go(view, extra = {}) { Object.assign(S, extra, { view }); closeSide(); render(); window.scrollTo(0, 0); }
 
@@ -644,8 +684,8 @@ function renderShell() {
   $("nav").innerHTML = `<div class="nav-label">Workspace</div>` + VIEWS.map((x) => {
     const dis = x.needs && !S.result;
     const count = x.count && S.result ? `<span class="count">${records().length}</span>` : "";
-    return `<button class="${x.key === S.view ? "active" : ""}" data-view="${x.key}" ${dis ? "disabled" : ""}>${ic(x.icon)}${x.label}${count}</button>`;
-  }).join("") + `<div class="nav-label">Assistant</div><button data-action="assistant">${ic("spark")}Decision assistant</button>`;
+    return `<button class="${x.key === S.view ? "active" : ""}" style="--nc:${x.color}" data-view="${x.key}" ${dis ? "disabled" : ""}>${ic(x.icon)}${x.label}${count}</button>`;
+  }).join("") + `<div class="nav-label">Assistant</div><button data-action="assistant" style="--nc:var(--violet)">${ic("spark")}Decision assistant</button>`;
   $("crumbs").textContent = S.result ? `${S.fileName || "Dataset"} · run ${S.result.run_date}` : "No data loaded";
   $("title").textContent = S.view === "applicant" && S.result && S.result.records[S.selected] ? `${S.selected} · ${S.result.records[S.selected].name || ""}` : v.title;
   const ai = META && META.llm_available && useLLM();
@@ -727,10 +767,10 @@ function slotGauge(filled, total) {
   const track = `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`;
   const val = pct > 0 ? `<path d="M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${arc(pct)}" stroke="url(#gg)" stroke-width="18" fill="none" stroke-linecap="round" data-tip="${filled} of ${total} slots filled"/>` : "";
   return `<div class="gauge"><svg class="chart" viewBox="0 0 200 110" role="img" aria-label="${filled} of ${total} open slots filled">
-    <defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#6366f1"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
+    <defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#14b8a6"/><stop offset=".55" stop-color="#6366f1"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
     <path d="${track}" stroke="var(--surface-3)" stroke-width="18" fill="none" stroke-linecap="round"/>${val}</svg>
     <div class="gauge-num"><b>${total ? Math.round(pct * 100) + "%" : "–"}</b><span>${filled} of ${total} slots filled</span></div></div>
-    <div class="gauge-legend"><span><i style="background:linear-gradient(90deg,#6366f1,#a855f7)"></i>Filled ${filled}</span><span><i style="background:var(--surface-3)"></i>Open ${Math.max(0, total - filled)}</span></div>`;
+    <div class="gauge-legend"><span><i style="background:linear-gradient(90deg,#14b8a6,#6366f1,#a855f7)"></i>Filled ${filled}</span><span><i style="background:var(--surface-3)"></i>Open ${Math.max(0, total - filled)}</span></div>`;
 }
 // Donut: decision mix, 2px gaps between arcs.
 function decisionDonut(c, total) {
@@ -747,7 +787,7 @@ function decisionDonut(c, total) {
 function scoreRing(score) {
   const r = 38, C = 2 * Math.PI * r, p = score == null ? 0 : Math.max(0, Math.min(1, score / 100));
   return `<div class="ring"><svg viewBox="0 0 88 88" role="img" aria-label="Score ${score == null ? "not scored" : fmt(score) + " of 100"}">
-    <defs><linearGradient id="rg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#6366f1"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
+    <defs><linearGradient id="rg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#14b8a6"/><stop offset=".5" stop-color="#6366f1"/><stop offset="1" stop-color="#d946ef"/></linearGradient></defs>
     <circle cx="44" cy="44" r="${r}" fill="none" stroke="var(--surface-3)" stroke-width="8"/>
     ${p ? `<circle cx="44" cy="44" r="${r}" fill="none" stroke="url(#rg)" stroke-width="8" stroke-linecap="round" stroke-dasharray="${C * p} ${C}" transform="rotate(-90 44 44)"/>` : ""}
     <text x="44" y="46" text-anchor="middle" style="font:700 20px var(--font);fill:var(--text)">${score == null ? "–" : fmt(score)}</text>
@@ -759,14 +799,14 @@ function viewDashboard() {
   const pct = (n) => total ? Math.round(100 * n / total) : 0;
   const slots = R.territories.reduce((a, t) => a + (t.slots || 0), 0), filled = R.territories.reduce((a, t) => a + t.approved, 0);
   const outside = recs.filter((r) => !r.territory_id).length;
-  let h = `<div class="greet"><div><h2>${greeting()}, Expansion team</h2>
+  let h = `<div class="greet"><div><h2>${greeting()}, <span class="hl">Expansion team</span></h2>
     <p>${total} applications from <b>${esc(S.fileName || "your file")}</b> decided · ${filled} new stores approved across ${R.territories.length} territories.</p></div>
     <div class="acts"><button class="btn" data-view="upload">${ic("upload")}Upload new file</button><button class="btn primary" data-action="export">${ic("download")}Export report</button></div></div>`;
   if (R.invariant_errors.length) h += `<div class="card card-b" style="border-color:var(--no-bd);margin-bottom:16px">${ic("alert")} Rule check failed: ${esc(R.invariant_errors.join(" "))}</div>`;
   h += `<div class="kpis"><button class="card kpi kpi-hero" data-filter=""><span class="k-go">${ic("arrow")}</span>
       <div class="k-top"><span class="k-ico">${ic("users")}</span>Applications</div><div class="k-val">${total}</div><div class="k-sub"><span class="up">${R.territories.length}</span>territories</div></button>`;
   for (const d of DECISIONS) {
-    h += `<button class="card kpi" data-filter="${d}"><span class="k-go">${ic("arrow")}</span><div class="k-top"><span class="k-ico ico-${cls(d)}">${ic(DEC_ICON[d])}</span>${d}</div>
+    h += `<button class="card kpi k-${cls(d)}" data-filter="${d}"><span class="k-go">${ic("arrow")}</span><div class="k-top"><span class="k-ico ico-${cls(d)}">${ic(DEC_ICON[d])}</span>${d}</div>
       <div class="k-val">${c[d]}</div><div class="k-sub"><span class="up">${pct(c[d])}%</span>of applications</div></button>`;
   }
   h += `</div><div class="grid g-chart" style="margin-bottom:16px">
@@ -791,10 +831,10 @@ function viewDashboard() {
       <div class="right hide-sm"><span class="chip">${ic("shield")}No two stores in one pin · checked</span></div></div><div class="card-b"><div class="ters">`;
   for (const t of R.territories) {
     const pctFill = t.slots ? Math.min(100, 100 * t.approved / t.slots) : 0;
-    h += `<div class="ter" data-ter="${esc(t.territory_id)}"><div class="t-h"><b class="mono">${esc(t.territory_id)}</b><span class="tag ${esc(t.priority)}">${esc(t.priority)}</span><span class="tag">${esc(t.tier)}</span></div>
+    h += `<div class="ter p-${esc(t.priority)}" data-ter="${esc(t.territory_id)}"><div class="t-h"><b class="mono">${esc(t.territory_id)}</b><span class="tag ${esc(t.priority)}">${esc(t.priority)}</span><span class="tag">${esc(t.tier)}</span></div>
       <div class="t-city">${ic("pin")} ${esc(t.city || "–")}</div>
       <div class="t-slots"><span>${t.slots ? `${t.approved} of ${t.slots} slots filled` : "No open slots"}</span><span>${t.slots ? Math.round(pctFill) + "%" : ""}</span></div>
-      <div class="bar"><i style="width:${pctFill}%;background:var(--grad)"></i></div>
+      <div class="bar"><i style="width:${pctFill}%"></i></div>
       <div class="t-row"><span>${t.applicants} applicants</span><span>${t.waitlisted} waitlisted · ${t.on_hold} on hold</span></div></div>`;
   }
   return h + `</div></div></div>`;
@@ -1032,7 +1072,6 @@ document.addEventListener("change", (ev) => {
   if (id === "file") { loadFile(ev.target.files[0]); ev.target.value = ""; }
   else if (id === "f-ter") { S.filters.ter = ev.target.value; render(); }
   else if (id === "pick") go("applicant", { selected: ev.target.value });
-  else if (id === "ai") { renderShell(); rerun(); }
 });
 document.addEventListener("mousemove", (ev) => {
   const t = ev.target.closest && ev.target.closest("[data-tip]"), tip = $("tip");
@@ -1062,9 +1101,6 @@ window.addEventListener("resize", () => syncAssistant());
   restore();
   if (window.innerWidth <= 1280) S.assistant = false;  // overlay: start closed on smaller screens
   try { META = await (await api("/api/meta")).json(); } catch (e) { META = { llm_available: false }; }
-  $("ai").disabled = !META.llm_available;
-  $("ai").checked = META.llm_available && (S.session ? !!S.session.use_llm : true);
-  $("ai-note").textContent = META.llm_available ? `AI phrasing on (${META.model}) · rules still decide` : "AI off (no API key) · answers built from the stored reasons";
   render();
 })();
 </script>
