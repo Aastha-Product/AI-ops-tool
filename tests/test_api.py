@@ -24,7 +24,7 @@ def _sample():
 
 def test_index_and_meta():
     r = client.get("/")
-    assert r.status_code == 200 and "Franchise Partner Onboarding Engine" in r.text
+    assert r.status_code == 200 and "Partnerly" in r.text and "Franchise Onboarding Engine" in r.text
     m = client.get("/api/meta").json()
     assert m["llm_available"] is False and len(m["worked_examples"]) == 4
 

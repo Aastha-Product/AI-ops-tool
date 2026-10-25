@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Franchise Partner Onboarding Engine</title>
+<title>Partnerly · Franchise Onboarding Engine</title>
 <meta name="description" content="Franchise partner acquisition, geo-selection and onboarding decisions.">
 <link rel="icon" href="/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -84,7 +84,8 @@ svg.i { width: 16px; height: 16px; flex: none; stroke: currentColor; fill: none;
 .brand-mark { width: 36px; height: 36px; border-radius: 11px; background: var(--grad); display: grid; place-items: center; box-shadow: 0 6px 16px rgba(79,70,229,.35); }
 .brand-mark svg.i { width: 18px; height: 18px; stroke: #fff; }
 .brand b { display: block; font-size: 14px; letter-spacing: -.01em; }
-.brand span { font-size: 11.5px; color: var(--muted); }
+.brand b.co { font-size: 19px; font-weight: 750; letter-spacing: -.03em; }
+.brand span { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
 .nav-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); padding: 14px 10px 6px; font-weight: 600; }
 .nav button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; margin: 1px 0; border: 0; background: none; color: var(--side-text); border-radius: 10px; cursor: pointer; text-align: left; font-weight: 500; }
 .nav button:hover { background: var(--side-hover); color: var(--text); }
@@ -382,7 +383,8 @@ svg.chart:hover [data-tip] { opacity: .5; } svg.chart [data-tip]:hover { opacity
 .ter .bar > i { background: var(--tg, var(--g-indigo)); }
 .as-ico { background: linear-gradient(135deg, #14b8a6, #6366f1 60%, #8b5cf6); }
 .chip.live .dot { background: var(--teal); }
-.me .av { background: linear-gradient(135deg, #f59e0b, #f43f5e); }
+.me .av { background: linear-gradient(135deg, #6366f1, #8b5cf6 50%, #14b8a6); }
+.me .av svg.i { stroke: #fff; width: 17px; height: 17px; }
 .brand-mark { background: linear-gradient(135deg, #6366f1, #8b5cf6 50%, #14b8a6); }
 .tabs button.on { color: var(--indigo); border-bottom-color: transparent; background-image: linear-gradient(90deg, var(--indigo), var(--teal)); background-size: 100% 2px; background-position: bottom; background-repeat: no-repeat; }
 .timeline .dot { border-color: var(--teal); } .timeline li.launch .dot { background: var(--g-amber); border-color: #f59e0b; }
@@ -520,7 +522,7 @@ svg.chart:hover [data-tip] { opacity: .5; } svg.chart [data-tip]:hover { opacity
   <aside class="sidebar" id="sidebar">
     <div class="brand">
       <div class="brand-mark" id="brand-mark"></div>
-      <div><b>Franchise Partner Onboarding Engine</b><span>Expansion Ops · Karnataka</span></div>
+      <div><b class="co">Partnerly</b><span>Franchise Onboarding Engine</span></div>
     </div>
     <nav class="nav" id="nav" aria-label="Main"></nav>
     <div class="side-note"><b>Rules decide, AI explains.</b> The same file always gives the same result.</div>
@@ -776,7 +778,7 @@ function renderShell() {
   $("title").textContent = S.view === "applicant" && S.result && S.result.records[S.selected] ? `${S.selected} · ${S.result.records[S.selected].name || ""}` : v.title;
   let a = S.result ? `<button class="btn sm" data-action="export" title="Download all decisions as Excel">${ic("download")}<span class="lbl">Export</span></button>` : "";
   a += `<button class="btn sm ${S.assistant ? "" : "primary"}" data-action="assistant" title="Ask why, or share new facts">${ic("spark")}<span class="lbl">Assistant</span></button>`;
-  a += `<div class="me hide-sm"><div class="av">GT</div><div><b>Growth Team</b><span>Franchise expansion</span></div></div>`;
+  a += `<div class="me hide-sm"><div class="av">${ic("store")}</div><div><b>Partnerly</b><span>Expansion Team · Karnataka</span></div></div>`;
   $("top-actions").innerHTML = a;
   $("gsearch").style.visibility = S.result ? "visible" : "hidden";
   if (document.activeElement !== $("gq")) $("gq").value = S.filters.q || "";
@@ -939,7 +941,7 @@ function viewDashboard() {
   const pct = (n) => total ? Math.round(100 * n / total) : 0;
   const filled = R.territories.reduce((a, t) => a + t.approved, 0);
   const outside = recs.filter((r) => !r.territory_id).length;
-  let h = `<div class="greet"><div><h2>${greeting()}, <span class="hl">Growth Team</span></h2>
+  let h = `<div class="greet"><div><h2>${greeting()}, <span class="hl">Partnerly team</span></h2>
     <p>${total} applications from <b>${esc(S.fileName || "your file")}</b> decided · ${filled} new stores approved across ${R.territories.length} territories.</p></div></div>`;
   if (R.invariant_errors.length) h += `<div class="card card-b" style="border-color:var(--no-bd);margin-bottom:16px">${ic("alert")} Rule check failed: ${esc(R.invariant_errors.join(" "))}</div>`;
   h += `<div class="kpis"><button class="card kpi kpi-hero" data-filter=""><span class="k-go">${ic("arrow")}</span>

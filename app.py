@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parent
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
-app = FastAPI(title="Franchise Partner Onboarding Engine", docs_url="/api/docs", openapi_url="/api/openapi.json")
+app = FastAPI(title="Partnerly · Franchise Onboarding Engine", docs_url="/api/docs", openapi_url="/api/openapi.json")
 
 
 class Session(BaseModel):

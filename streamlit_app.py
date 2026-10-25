@@ -477,7 +477,7 @@ def chat_panel():
 def main():
     init_state()
     s = ss()
-    st.markdown("## 🏬 Franchise Partner Onboarding Engine")
+    st.markdown("## 🏬 Partnerly · Franchise Onboarding Engine")
     st.caption("Upload applications → every applicant gets a decision, the reasons, next steps and (if approved) a dated onboarding "
                "checklist and training plan. Rules decide; AI only explains.")
     left, right = st.columns([3, 2], gap="large")

@@ -11,7 +11,7 @@ import re
 from . import refdata
 from .onboarding import fmt_date
 
-SIGN_OFF = "Warm regards,\nGrowth Team\nFranchise Partnerships"
+SIGN_OFF = "Warm regards,\nFranchise Expansion Team\nPartnerly"
 
 # Reason sentences are written for the internal team; these rewrites make them read naturally to an applicant.
 APPLICANT_VOICE = [
