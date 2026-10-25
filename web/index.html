@@ -14,32 +14,39 @@
 :root {
   --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
-  --bg: #f4f6fa; --surface: #ffffff; --surface-2: #f8fafc; --surface-3: #f1f4f9;
-  --border: #e3e8ef; --border-strong: #cdd5df;
-  --text: #0f172a; --text-2: #334155; --muted: #64748b; --faint: #94a3b8;
-  --brand: #2b4acb; --brand-hover: #213ab0; --brand-soft: #eef2ff; --brand-ink: #ffffff;
-  --side-bg: #0d1530; --side-text: #b8c2dc; --side-hover: rgba(255,255,255,.06); --side-active: rgba(120,146,255,.16);
+  --bg: #f3f4f8; --surface: #ffffff; --surface-2: #f8f9fc; --surface-3: #eef0f6;
+  --border: #e7e9f0; --border-strong: #d4d8e3;
+  --text: #0f172a; --text-2: #394155; --muted: #6b7386; --faint: #9aa1b3;
+  --brand: #4f46e5; --brand-hover: #4338ca; --brand-soft: #eef0ff; --brand-ink: #ffffff;
+  --grad: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  --grad-dark: linear-gradient(150deg, #1e1b4b 0%, #312e81 55%, #5b21b6 100%);
+  --side-bg: #ffffff; --side-text: #4b5468; --side-hover: #f3f4f8; --side-active: #eef0ff; --side-active-text: #4338ca;
+  /* chart marks: validated with the dataviz palette checker (light surface #ffffff) */
+  --c-ok: #12a15e; --c-wait: #c27a0a; --c-hold: #2e7fe0; --c-no: #d92d20;
   --ok: #067647; --ok-bg: #ecfdf3; --ok-bd: #abefc6;
   --wait: #b54708; --wait-bg: #fffaeb; --wait-bd: #fedf89;
   --hold: #175cd3; --hold-bg: #eff8ff; --hold-bd: #b2ddff;
   --no: #b42318; --no-bg: #fef3f2; --no-bd: #fecdca;
-  --shadow-sm: 0 1px 2px rgba(16,24,40,.05);
-  --shadow: 0 1px 3px rgba(16,24,40,.08), 0 1px 2px rgba(16,24,40,.04);
-  --shadow-lg: 0 16px 40px rgba(15,23,42,.16);
-  --radius: 12px; --radius-sm: 8px;
+  --shadow-sm: 0 1px 2px rgba(16,24,40,.04);
+  --shadow: 0 1px 2px rgba(16,24,40,.04), 0 6px 20px rgba(16,24,40,.05);
+  --shadow-lg: 0 20px 48px rgba(15,23,42,.18);
+  --radius: 16px; --radius-sm: 10px;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0a0e17; --surface: #111827; --surface-2: #151d2e; --surface-3: #1a2336;
-    --border: #232e42; --border-strong: #33415a;
-    --text: #e8ecf3; --text-2: #c3cad6; --muted: #8b96a9; --faint: #64708a;
-    --brand: #7b93ff; --brand-hover: #95a8ff; --brand-soft: #1b2450; --brand-ink: #0a0e17;
-    --side-bg: #070b16; --side-text: #9aa6c4;
+    --bg: #0b0f1a; --surface: #121829; --surface-2: #161d31; --surface-3: #1d2540;
+    --border: #232b44; --border-strong: #323c5c;
+    --text: #e8ebf4; --text-2: #c2c8d8; --muted: #8b93a9; --faint: #646d86;
+    --brand: #8b8cf8; --brand-hover: #a5a6ff; --brand-soft: #1f2350; --brand-ink: #0b0f1a;
+    --grad: linear-gradient(135deg, #5b5bf0 0%, #8b5cf6 100%);
+    --side-bg: #0f1424; --side-text: #9aa3bb; --side-hover: rgba(255,255,255,.04); --side-active: #1f2350; --side-active-text: #c7c9ff;
+    /* validated against the dark chart surface #141b2d */
+    --c-ok: #22a868; --c-wait: #c98315; --c-hold: #3b8fe0; --c-no: #e5574b;
     --ok: #75e0a7; --ok-bg: #0b2a1c; --ok-bd: #155d3b;
     --wait: #fdb022; --wait-bg: #2e1f05; --wait-bd: #6b4709;
     --hold: #84caff; --hold-bg: #0b2240; --hold-bd: #1d4f8c;
     --no: #fda29b; --no-bg: #36110d; --no-bd: #7a271a;
-    --shadow-sm: none; --shadow: none; --shadow-lg: 0 16px 40px rgba(0,0,0,.5);
+    --shadow-sm: none; --shadow: none; --shadow-lg: 0 20px 48px rgba(0,0,0,.55);
   }
 }
 * { box-sizing: border-box; }
@@ -55,24 +62,22 @@ svg.i { width: 16px; height: 16px; flex: none; stroke: currentColor; fill: none;
 
 /* ------------------------------------------------------------------ shell */
 .app { display: grid; grid-template-columns: 236px minmax(0, 1fr) auto; min-height: 100vh; }
-.sidebar { background: var(--side-bg); color: var(--side-text); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; padding: 18px 12px; z-index: 30; }
-.brand { display: flex; gap: 10px; align-items: center; padding: 4px 8px 20px; color: #fff; }
-.brand-mark { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, #4f6bff, #2b4acb); display: grid; place-items: center; box-shadow: 0 4px 12px rgba(43,74,203,.4); }
+.sidebar { background: var(--side-bg); color: var(--side-text); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; padding: 18px 14px; z-index: 30; border-right: 1px solid var(--border); overflow-y: auto; }
+.brand { display: flex; gap: 10px; align-items: center; padding: 4px 6px 18px; color: var(--text); }
+.brand-mark { width: 36px; height: 36px; border-radius: 11px; background: var(--grad); display: grid; place-items: center; box-shadow: 0 6px 16px rgba(79,70,229,.35); }
 .brand-mark svg.i { width: 18px; height: 18px; stroke: #fff; }
 .brand b { display: block; font-size: 14px; letter-spacing: -.01em; }
-.brand span { font-size: 11.5px; color: var(--side-text); }
-.nav-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #66739a; padding: 14px 10px 6px; }
-.nav button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; margin: 1px 0; border: 0; background: none; color: var(--side-text); border-radius: 8px; cursor: pointer; text-align: left; font-weight: 500; }
-.nav button:hover { background: var(--side-hover); color: #fff; }
-.nav button.active { background: var(--side-active); color: #fff; box-shadow: inset 2px 0 0 #7b93ff; }
+.brand span { font-size: 11.5px; color: var(--muted); }
+.nav-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); padding: 14px 10px 6px; font-weight: 600; }
+.nav button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; margin: 1px 0; border: 0; background: none; color: var(--side-text); border-radius: 10px; cursor: pointer; text-align: left; font-weight: 500; }
+.nav button:hover { background: var(--side-hover); color: var(--text); }
+.nav button.active { background: var(--side-active); color: var(--side-active-text); font-weight: 600; }
 .nav button:disabled { opacity: .4; cursor: default; background: none; }
-.nav .count { margin-left: auto; font-size: 11.5px; background: rgba(255,255,255,.08); padding: 0 7px; border-radius: 999px; }
-.side-foot { margin-top: auto; padding: 12px 10px; border-top: 1px solid rgba(255,255,255,.07); font-size: 12px; line-height: 1.45; }
-.side-foot b { color: #e3e8ff; font-weight: 600; }
+.nav .count { margin-left: auto; font-size: 11.5px; background: var(--surface-3); color: var(--text-2); padding: 0 8px; border-radius: 999px; font-weight: 600; }
 .main { min-width: 0; display: flex; flex-direction: column; }
 .topbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 12px; padding: 12px 28px; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); min-height: 64px; }
-.topbar h1 { font-size: 18px; margin: 0; letter-spacing: -.015em; font-weight: 650; }
-.crumbs { font-size: 12px; color: var(--muted); }
+.topbar h1 { font-size: 18px; margin: 0; letter-spacing: -.015em; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 340px; }
+.crumbs { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px; }
 .top-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 .progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; overflow: hidden; display: none; }
 .progress.on { display: block; }
@@ -123,7 +128,8 @@ select.input, input.input { height: 34px; padding: 0 10px; border: 1px solid var
 
 /* ------------------------------------------------------------------ dashboard */
 .kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin-bottom: 16px; }
-.kpi { padding: 14px 16px; cursor: pointer; transition: border-color .12s, transform .12s; text-align: left; }
+.kpi { padding: 16px 18px; cursor: pointer; transition: border-color .12s, transform .12s, box-shadow .12s; text-align: left; position: relative; color: var(--text); font: inherit; }
+.kpi:hover { transform: translateY(-1px); }
 .kpi:hover { border-color: var(--border-strong); }
 .kpi .k-top { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12.5px; font-weight: 550; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .kpi .k-ico { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; }
@@ -245,7 +251,7 @@ td.wrap { white-space: normal; min-width: 220px; max-width: 420px; }
 .assistant { width: 392px; border-left: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow: hidden; z-index: 25; }
 .assistant.closed { display: none; }
 .as-h { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--border); }
-.as-ico { width: 32px; height: 32px; border-radius: 9px; background: linear-gradient(135deg, #6d83ff, #2b4acb); display: grid; place-items: center; color: #fff; }
+.as-ico { width: 32px; height: 32px; border-radius: 10px; background: var(--grad); display: grid; place-items: center; color: #fff; }
 .as-ico svg.i { stroke: #fff; }
 .as-h b { display: block; font-size: 14px; } .as-h span { font-size: 12px; color: var(--muted); }
 .as-h .right { margin-left: auto; display: flex; gap: 4px; }
@@ -284,6 +290,79 @@ td.wrap { white-space: normal; min-width: 220px; max-width: 420px; }
 .toast { position: fixed; top: 76px; left: 50%; transform: translateX(-50%); background: #1d2939; color: #fff; padding: 10px 16px; border-radius: 10px; box-shadow: var(--shadow-lg); z-index: 60; font-size: 13.5px; display: none; max-width: 90vw; }
 .toast.err { background: #b42318; } .toast.on { display: block; }
 
+/* ------------------------------------------------------------------ v3 visuals */
+.promo { margin-top: auto; border-radius: 16px; padding: 16px; background: var(--grad-dark); color: #e0e3ff; position: relative; overflow: hidden; }
+.promo::after { content: ""; position: absolute; right: -34px; top: -34px; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, rgba(167,139,250,.55), transparent 70%); }
+.promo .p-ico { width: 34px; height: 34px; border-radius: 10px; background: rgba(255,255,255,.14); display: grid; place-items: center; margin-bottom: 10px; }
+.promo .p-ico svg.i { stroke: #fff; }
+.promo b { display: block; color: #fff; font-size: 14px; margin-bottom: 4px; }
+.promo p { margin: 0 0 12px; font-size: 12.5px; line-height: 1.45; color: #c7cbf5; position: relative; z-index: 1; }
+.promo button { position: relative; z-index: 1; width: 100%; border: 0; border-radius: 10px; padding: 8px 10px; background: #fff; color: #3730a3; font-weight: 650; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.side-note { font-size: 11.5px; color: var(--faint); padding: 12px 6px 0; line-height: 1.45; }
+.gsearch { position: relative; flex: 0 1 320px; margin-left: 16px; }
+.gsearch svg.i { position: absolute; left: 13px; top: 11px; color: var(--faint); }
+.gsearch input { width: 100%; height: 38px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); padding: 0 14px 0 37px; color: var(--text); }
+.gsearch input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
+.me { display: flex; align-items: center; gap: 9px; padding-left: 6px; }
+.me .av { width: 34px; height: 34px; border-radius: 50%; background: var(--grad); color: #fff; font-weight: 700; font-size: 12px; display: grid; place-items: center; }
+.me b { display: block; font-size: 13px; line-height: 1.2; } .me span { font-size: 11.5px; color: var(--muted); }
+.greet { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+.greet h2 { margin: 0; font-size: 26px; letter-spacing: -.025em; font-weight: 700; }
+.greet p { margin: 4px 0 0; color: var(--muted); }
+.greet .acts { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+.kpi.kpi-hero { background: var(--grad); border-color: transparent; color: #fff; box-shadow: 0 12px 30px rgba(79,70,229,.30); }
+.kpi.kpi-hero .k-top, .kpi.kpi-hero .k-sub { color: rgba(255,255,255,.86); }
+.kpi.kpi-hero .k-ico { background: rgba(255,255,255,.18); color: #fff; }
+.kpi .k-go { position: absolute; top: 14px; right: 14px; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); display: grid; place-items: center; color: var(--muted); background: var(--surface); }
+.kpi.kpi-hero .k-go { border-color: rgba(255,255,255,.4); color: #fff; background: rgba(255,255,255,.08); }
+.kpi .k-go svg.i { width: 14px; height: 14px; transform: rotate(-45deg); }
+.kpi .k-top { padding-right: 34px; }
+.kpi .k-sub .up { display: inline-block; padding: 0 6px; border-radius: 6px; background: var(--surface-3); color: var(--text-2); font-weight: 650; margin-right: 4px; }
+.kpi.kpi-hero .k-sub .up { background: rgba(255,255,255,.2); color: #fff; }
+.g-chart { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+.chart-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--text-2); }
+.chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.chart-legend i, .donut-list i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex: none; }
+.c-Approved { background: var(--c-ok); } .c-Waitlisted { background: var(--c-wait); } .c-On-hold { background: var(--c-hold); } .c-Not-approved { background: var(--c-no); }
+svg.chart { width: 100%; height: auto; display: block; overflow: visible; }
+svg.chart text { font-family: var(--font); fill: var(--muted); font-size: 11px; }
+svg.chart text.lbl { fill: var(--text-2); font-weight: 600; font-size: 11.5px; }
+svg.chart .grid { stroke: var(--border); stroke-width: 1; }
+svg.chart [data-tip] { cursor: pointer; transition: opacity .12s; }
+svg.chart:hover [data-tip] { opacity: .5; } svg.chart [data-tip]:hover { opacity: 1; }
+.gauge { position: relative; max-width: 260px; margin: 6px auto 0; }
+.gauge-num { position: absolute; left: 0; right: 0; bottom: 6px; text-align: center; }
+.gauge-num b { font-size: 30px; letter-spacing: -.02em; display: block; line-height: 1.1; color: var(--text); }
+.gauge-num span { font-size: 12.5px; color: var(--muted); }
+.gauge-legend { display: flex; justify-content: center; gap: 16px; margin-top: 12px; font-size: 12.5px; color: var(--text-2); }
+.gauge-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.gauge-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.donut-wrap { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.donut-wrap svg { width: 148px; height: 148px; flex: none; }
+.donut-list { flex: 1; min-width: 160px; list-style: none; margin: 0; padding: 0; }
+.donut-list li { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px dashed var(--border); font-size: 13px; cursor: pointer; color: var(--text-2); }
+.donut-list li:last-child { border-bottom: 0; } .donut-list li:hover { color: var(--text); }
+.donut-list b { margin-left: auto; color: var(--text); } .donut-list .pc { width: 40px; text-align: right; color: var(--muted); font-size: 12px; }
+.ai-card { background: var(--grad-dark); color: #e0e3ff; border: 0; position: relative; overflow: hidden; }
+.ai-card::after { content: ""; position: absolute; right: -50px; bottom: -50px; width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, rgba(167,139,250,.42), transparent 70%); pointer-events: none; }
+.ai-card .card-h { border-color: rgba(255,255,255,.1); } .ai-card h3 { color: #fff; } .ai-card .sub { color: #b9bdf0; }
+.ai-card .as-ico { background: rgba(255,255,255,.14); }
+.ai-card .q { display: flex; gap: 8px; align-items: center; width: 100%; text-align: left; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); color: #eef0ff; border-radius: 10px; padding: 9px 11px; margin-bottom: 8px; cursor: pointer; font-size: 13px; position: relative; z-index: 1; }
+.ai-card .q:hover { background: rgba(255,255,255,.16); } .ai-card .q svg.i { color: #c4b5fd; }
+.ai-card .meta-line { font-size: 12px; color: #b9bdf0; position: relative; z-index: 1; margin-top: 4px; }
+.mini-av { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 11px; flex: none; }
+.who-row { display: flex; align-items: center; gap: 10px; }
+.tip { position: fixed; z-index: 70; pointer-events: none; background: #0f172a; color: #fff; font-size: 12.5px; padding: 6px 10px; border-radius: 8px; box-shadow: var(--shadow-lg); white-space: nowrap; display: none; }
+.cover { height: 84px; background: var(--grad); border-radius: var(--radius) var(--radius) 0 0; position: relative; overflow: hidden; }
+.cover::before { content: ""; position: absolute; right: 60px; top: -70px; width: 230px; height: 230px; border-radius: 50%; background: rgba(255,255,255,.09); }
+.cover::after { content: ""; position: absolute; right: -40px; top: 10px; width: 160px; height: 160px; border-radius: 50%; background: rgba(255,255,255,.07); }
+.profile.with-cover { padding-top: 0; position: relative; z-index: 1; }
+.profile.with-cover .avatar { margin-top: -30px; border: 4px solid var(--surface); width: 68px; height: 68px; border-radius: 20px; font-size: 22px; box-shadow: var(--shadow); }
+.profile.with-cover .p-body { padding-top: 12px; min-width: 0; flex: 1; }
+.ring { width: 96px; height: 96px; flex: none; margin-top: -34px; background: var(--surface); border-radius: 50%; padding: 4px; box-shadow: var(--shadow); }
+.ring svg { width: 100%; height: 100%; display: block; }
+.p-side { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+
 /* ------------------------------------------------------------------ responsive */
 @media (max-width: 1280px) {
   .assistant { position: fixed; right: 0; top: 0; box-shadow: var(--shadow-lg); z-index: 50; }
@@ -297,7 +376,9 @@ td.wrap { white-space: normal; min-width: 220px; max-width: 420px; }
   .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .metric:nth-child(4) { border-left: 0; } .metric:nth-child(n+4) { border-top: 1px solid var(--border); }
-  .g-2, .g-3, .g-main, .hero, .how { grid-template-columns: minmax(0, 1fr); }
+  .g-2, .g-3, .g-main, .g-chart, .hero, .how { grid-template-columns: minmax(0, 1fr); }
+  .gsearch { display: none; }
+  .ring { margin-top: 0; width: 80px; height: 80px; }
   .topbar { padding: 10px 16px; } .content { padding: 16px 16px 40px; }
   .assistant { width: 100%; }
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .stats div:nth-child(3) { border-left: 0; } .stats div:nth-child(n+3) { border-top: 1px solid var(--border); }
@@ -312,6 +393,9 @@ td.wrap { white-space: normal; min-width: 220px; max-width: 420px; }
   .profile { flex-wrap: wrap; } .p-nav { margin-left: 0; }
   .search input { width: 100%; } .search { flex: 1; }
   .topbar h1 { font-size: 16px; }
+  .crumbs, .topbar h1 { max-width: calc(100vw - 190px); }
+  .greet h2 { font-size: 21px; }
+  .greet .acts { margin-left: 0; }
 }
 </style>
 </head>
@@ -323,12 +407,17 @@ td.wrap { white-space: normal; min-width: 220px; max-width: 420px; }
       <div><b>Franchise Partner Onboarding Engine</b><span>Expansion Ops · Karnataka</span></div>
     </div>
     <nav class="nav" id="nav" aria-label="Main"></nav>
-    <div class="side-foot"><b>Rules decide, AI explains.</b><br>Every decision comes from fixed rules and a score card; the same file always gives the same result.</div>
+    <div class="promo"><div class="p-ico" id="promo-ico"></div><b>Decision assistant</b>
+      <p>Ask why any applicant got their decision, or share new facts. Every decision re-runs instantly.</p>
+      <button data-action="assistant" id="promo-btn">Open assistant</button></div>
+    <div class="side-note"><b>Rules decide, AI explains.</b> The same file always gives the same result.</div>
   </aside>
   <div class="main">
     <header class="topbar">
       <button class="btn icon ghost menu-btn" id="menu" aria-label="Open navigation"></button>
       <div><div class="crumbs" id="crumbs"></div><h1 id="title"></h1></div>
+      <div class="gsearch" id="gsearch"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="gq" type="search" placeholder="Search applicants, pins, territories…" aria-label="Search applicants" autocomplete="off"></div>
       <div class="top-actions" id="top-actions"></div>
       <div class="progress" id="progress"></div>
     </header>
@@ -357,6 +446,7 @@ td.wrap { white-space: normal; min-width: 220px; max-width: 420px; }
 </div>
 <div class="backdrop" id="backdrop"></div>
 <div class="toast" id="toast" role="status"></div>
+<div class="tip" id="tip" role="tooltip"></div>
 <input type="file" id="file" accept=".xlsx,.xlsm" hidden>
 <script>
 "use strict";
@@ -563,7 +653,10 @@ function renderShell() {
   if (S.result) a += `<button class="btn sm hide-sm" data-action="export">${ic("download")}Export</button>`;
   if (S.changeLog.length) a += `<button class="btn sm hide-sm" data-action="reset">${ic("refresh")}Reset updates</button>`;
   a += `<button class="btn sm ${S.assistant ? "" : "primary"}" data-action="assistant">${ic("spark")}Assistant</button>`;
+  a += `<div class="me hide-sm"><div class="av">ET</div><div><b>Expansion team</b><span>Karnataka</span></div></div>`;
   $("top-actions").innerHTML = a;
+  $("gsearch").style.visibility = S.result ? "visible" : "hidden";
+  if (document.activeElement !== $("gq")) $("gq").value = S.filters.q || "";
 }
 
 // ---------------------------------------------------------------- views: upload
@@ -600,48 +693,111 @@ function viewUpload() {
 }
 
 // ---------------------------------------------------------------- views: dashboard
+const DEC_VAR = { Approved: "var(--c-ok)", Waitlisted: "var(--c-wait)", "On hold": "var(--c-hold)", "Not approved": "var(--c-no)" };
+function greeting() { const h = new Date().getHours(); return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening"; }
+function avatarHtml(name, id, size = 30) {
+  return `<span class="mini-av" style="width:${size}px;height:${size}px;background:hsl(${hue(id)} 58% 48%)">${esc(initials(name))}</span>`;
+}
+// Stacked bars: applicants per territory, split by decision. 2px surface gap between segments, 4px rounded ends.
+function territoryBars(R, recs) {
+  const ters = R.territories.map((t) => t.territory_id);
+  const rows = ters.map((tid) => { const c = {}; DECISIONS.forEach((d) => (c[d] = recs.filter((r) => r.territory_id === tid && r.decision === d).length)); return { tid, c, total: DECISIONS.reduce((a, d) => a + c[d], 0) }; });
+  const max = Math.max(1, ...rows.map((r) => r.total));
+  const step = max <= 5 ? 1 : max <= 10 ? 2 : 5, top = Math.ceil(max / step) * step;
+  const W = Math.max(360, rows.length * 78), H = 230, pl = 28, pb = 34, pt = 8, ph = H - pb - pt, bw = 30;
+  const slot = (W - pl) / Math.max(rows.length, 1);
+  let g = "";
+  for (let v = 0; v <= top; v += step) { const y = pt + ph - (v / top) * ph; g += `<line class="grid" x1="${pl}" x2="${W}" y1="${y}" y2="${y}"/><text x="${pl - 8}" y="${y + 4}" text-anchor="end">${v}</text>`; }
+  rows.forEach((r, i) => {
+    const x = pl + slot * i + (slot - bw) / 2; let y = pt + ph;
+    DECISIONS.forEach((d) => {
+      const n = r.c[d]; if (!n) return;
+      const h = (n / top) * ph, gap = 2;
+      y -= h;
+      g += `<rect x="${x}" y="${y + gap / 2}" width="${bw}" height="${Math.max(h - gap, 2)}" rx="4" fill="${DEC_VAR[d]}" data-tip="${esc(r.tid)} · ${d}: ${n}" data-ter="${esc(r.tid)}"/>`;
+    });
+    g += `<text class="lbl" x="${x + bw / 2}" y="${H - 16}" text-anchor="middle">${esc(r.tid)}</text><text x="${x + bw / 2}" y="${H - 3}" text-anchor="middle">${r.total} total</text>`;
+  });
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Applicants per territory by decision">${g}</svg>`;
+}
+// Half-circle gauge: approved stores vs open slots.
+function slotGauge(filled, total) {
+  const pct = total ? Math.min(1, filled / total) : 0, r = 80, cx = 100, cy = 96;
+  const arc = (p) => { const a = Math.PI * (1 - p); return `${cx + r * Math.cos(a)} ${cy - r * Math.sin(a)}`; };
+  const track = `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`;
+  const val = pct > 0 ? `<path d="M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${arc(pct)}" stroke="url(#gg)" stroke-width="18" fill="none" stroke-linecap="round" data-tip="${filled} of ${total} slots filled"/>` : "";
+  return `<div class="gauge"><svg class="chart" viewBox="0 0 200 110" role="img" aria-label="${filled} of ${total} open slots filled">
+    <defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#6366f1"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
+    <path d="${track}" stroke="var(--surface-3)" stroke-width="18" fill="none" stroke-linecap="round"/>${val}</svg>
+    <div class="gauge-num"><b>${total ? Math.round(pct * 100) + "%" : "–"}</b><span>${filled} of ${total} slots filled</span></div></div>
+    <div class="gauge-legend"><span><i style="background:linear-gradient(90deg,#6366f1,#a855f7)"></i>Filled ${filled}</span><span><i style="background:var(--surface-3)"></i>Open ${Math.max(0, total - filled)}</span></div>`;
+}
+// Donut: decision mix, 2px gaps between arcs.
+function decisionDonut(c, total) {
+  const r = 54, C = 2 * Math.PI * r; let off = 0, segs = "";
+  DECISIONS.forEach((d) => {
+    if (!c[d]) return;
+    const len = (c[d] / Math.max(total, 1)) * C, gap = DECISIONS.filter((x) => c[x]).length > 1 ? 2 : 0;
+    segs += `<circle cx="74" cy="74" r="${r}" fill="none" stroke="${DEC_VAR[d]}" stroke-width="18" stroke-dasharray="${Math.max(len - gap, 0.1)} ${C}" stroke-dashoffset="${-off}" transform="rotate(-90 74 74)" data-tip="${d}: ${c[d]} (${Math.round(100 * c[d] / Math.max(total, 1))}%)" data-filter="${d}"/>`;
+    off += len;
+  });
+  return `<svg class="chart" viewBox="0 0 148 148" role="img" aria-label="Decision mix"><circle cx="74" cy="74" r="${r}" fill="none" stroke="var(--surface-3)" stroke-width="18"/>${segs}
+    <text x="74" y="72" text-anchor="middle" style="font-size:26px;font-weight:700;fill:var(--text)">${total}</text><text x="74" y="91" text-anchor="middle">applications</text></svg>`;
+}
+function scoreRing(score) {
+  const r = 38, C = 2 * Math.PI * r, p = score == null ? 0 : Math.max(0, Math.min(1, score / 100));
+  return `<div class="ring"><svg viewBox="0 0 88 88" role="img" aria-label="Score ${score == null ? "not scored" : fmt(score) + " of 100"}">
+    <defs><linearGradient id="rg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#6366f1"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
+    <circle cx="44" cy="44" r="${r}" fill="none" stroke="var(--surface-3)" stroke-width="8"/>
+    ${p ? `<circle cx="44" cy="44" r="${r}" fill="none" stroke="url(#rg)" stroke-width="8" stroke-linecap="round" stroke-dasharray="${C * p} ${C}" transform="rotate(-90 44 44)"/>` : ""}
+    <text x="44" y="46" text-anchor="middle" style="font:700 20px var(--font);fill:var(--text)">${score == null ? "–" : fmt(score)}</text>
+    <text x="44" y="61" text-anchor="middle" style="font:500 9.5px var(--font);fill:var(--muted)">${score == null ? "not scored" : "score / 100"}</text></svg></div>`;
+}
+
 function viewDashboard() {
   const R = S.result, recs = records(), c = R.counts, total = recs.length;
   const pct = (n) => total ? Math.round(100 * n / total) : 0;
-  let h = "";
+  const slots = R.territories.reduce((a, t) => a + (t.slots || 0), 0), filled = R.territories.reduce((a, t) => a + t.approved, 0);
+  const outside = recs.filter((r) => !r.territory_id).length;
+  let h = `<div class="greet"><div><h2>${greeting()}, Expansion team</h2>
+    <p>${total} applications from <b>${esc(S.fileName || "your file")}</b> decided · ${filled} new stores approved across ${R.territories.length} territories.</p></div>
+    <div class="acts"><button class="btn" data-view="upload">${ic("upload")}Upload new file</button><button class="btn primary" data-action="export">${ic("download")}Export report</button></div></div>`;
   if (R.invariant_errors.length) h += `<div class="card card-b" style="border-color:var(--no-bd);margin-bottom:16px">${ic("alert")} Rule check failed: ${esc(R.invariant_errors.join(" "))}</div>`;
-  h += `<div class="kpis"><button class="card kpi" data-filter="">
-      <div class="k-top"><span class="k-ico ico-all">${ic("users")}</span>Applications</div><div class="k-val">${total}</div><div class="k-sub">${R.territories.length} territories</div></button>`;
+  h += `<div class="kpis"><button class="card kpi kpi-hero" data-filter=""><span class="k-go">${ic("arrow")}</span>
+      <div class="k-top"><span class="k-ico">${ic("users")}</span>Applications</div><div class="k-val">${total}</div><div class="k-sub"><span class="up">${R.territories.length}</span>territories</div></button>`;
   for (const d of DECISIONS) {
-    h += `<button class="card kpi" data-filter="${d}"><div class="k-top"><span class="k-ico ico-${cls(d)}">${ic(DEC_ICON[d])}</span>${d}</div>
-      <div class="k-val">${c[d]}</div><div class="k-sub">${pct(c[d])}% of applications</div></button>`;
+    h += `<button class="card kpi" data-filter="${d}"><span class="k-go">${ic("arrow")}</span><div class="k-top"><span class="k-ico ico-${cls(d)}">${ic(DEC_ICON[d])}</span>${d}</div>
+      <div class="k-val">${c[d]}</div><div class="k-sub"><span class="up">${pct(c[d])}%</span>of applications</div></button>`;
   }
-  h += `</div>`;
-  // territory capacity: full width so cards sit side by side even with the assistant docked
-  h += `<div class="card" style="margin-bottom:16px"><div class="card-h"><h3>Territory capacity</h3><span class="sub">slots filled by approvals</span>
+  h += `</div><div class="grid g-chart" style="margin-bottom:16px">
+    <div class="card"><div class="card-h"><h3>Applicants by territory</h3><span class="sub">split by decision${outside ? ` · ${outside} outside any territory` : ""}</span>
+      <div class="right chart-legend hide-sm">${DECISIONS.map((d) => `<span><i class="c-${cls(d)}"></i>${d}</span>`).join("")}</div></div>
+      <div class="card-b">${territoryBars(R, recs)}</div></div>
+    <div class="card"><div class="card-h"><h3>Store slots filled</h3><span class="sub">approvals vs open slots</span></div><div class="card-b">${slotGauge(filled, slots)}</div></div></div>`;
+  const holds = recs.filter((r) => r.decision === "On hold");
+  h += `<div class="grid g-3" style="margin-bottom:16px">
+    <div class="card"><div class="card-h"><h3>Decision mix</h3><span class="sub">click to filter</span></div><div class="card-b"><div class="donut-wrap">${decisionDonut(c, total)}
+      <ul class="donut-list">${DECISIONS.map((d) => `<li data-filter="${d}"><i class="c-${cls(d)}"></i>${d}<b>${c[d]}</b><span class="pc">${pct(c[d])}%</span></li>`).join("")}</ul></div></div></div>
+    <div class="card"><div class="card-h"><h3>Needs follow-up</h3><span class="sub">${holds.length} on hold</span>${holds.length ? `<div class="right"><button class="btn sm ghost" data-filter="On hold">View all</button></div>` : ""}</div>`;
+  h += holds.length ? `<ul class="todo">${holds.slice(0, 5).map((r) => {
+      const fix = (r.reasons.find((x) => x.severity === "blocking" && x.fix) || {}).fix || r.headline;
+      return `<li data-app="${esc(r.app_id)}">${avatarHtml(r.name, r.app_id)}<div style="min-width:0"><span class="t-id">${esc(r.name || r.app_id)}</span> <span class="muted mono">${esc(r.app_id)}</span><div class="t-fix clamp">${esc(fix)}</div></div></li>`;
+    }).join("")}</ul>` : `<div class="empty">${ic("check")}<div>Nothing waiting on applicants.</div></div>`;
+  const prompts = examplePrompts().slice(0, 3);
+  h += `</div><div class="card ai-card"><div class="card-h"><span class="as-ico">${ic("spark")}</span><h3>Ask the assistant</h3><span class="sub">re-decides instantly</span></div><div class="card-b">
+      ${prompts.map((p) => `<button class="q" data-prompt="${esc(p)}">${ic("arrow")}${esc(p)}</button>`).join("")}
+      <div class="meta-line">${S.changeLog.length ? `${S.changeLog.length} update(s) applied this session · <a href="#" data-action="reset" style="color:#fff;text-decoration:underline">reset</a>` : "Updates you give here re-run every decision and list the knock-on effects."}</div></div></div></div>`;
+  h += `<div class="card"><div class="card-h"><h3>Territory capacity</h3><span class="sub">slots filled by approvals · click a territory to see its applicants</span>
       <div class="right hide-sm"><span class="chip">${ic("shield")}No two stores in one pin · checked</span></div></div><div class="card-b"><div class="ters">`;
   for (const t of R.territories) {
     const pctFill = t.slots ? Math.min(100, 100 * t.approved / t.slots) : 0;
     h += `<div class="ter" data-ter="${esc(t.territory_id)}"><div class="t-h"><b class="mono">${esc(t.territory_id)}</b><span class="tag ${esc(t.priority)}">${esc(t.priority)}</span><span class="tag">${esc(t.tier)}</span></div>
       <div class="t-city">${ic("pin")} ${esc(t.city || "–")}</div>
       <div class="t-slots"><span>${t.slots ? `${t.approved} of ${t.slots} slots filled` : "No open slots"}</span><span>${t.slots ? Math.round(pctFill) + "%" : ""}</span></div>
-      <div class="bar"><i style="width:${pctFill}%;background:${pctFill >= 100 ? "#17b26a" : "var(--brand)"}"></i></div>
+      <div class="bar"><i style="width:${pctFill}%;background:var(--grad)"></i></div>
       <div class="t-row"><span>${t.applicants} applicants</span><span>${t.waitlisted} waitlisted · ${t.on_hold} on hold</span></div></div>`;
   }
-  h += `</div></div></div><div class="grid g-2"><div class="card">`;
-  const holds = recs.filter((r) => r.decision === "On hold");
-  h += `<div class="card-h">${ic("pause")}<h3>Needs follow-up</h3><span class="sub">${holds.length} on hold</span>
-      ${holds.length ? `<div class="right"><button class="btn sm ghost" data-filter="On hold">View all</button></div>` : ""}</div>`;
-  if (holds.length) {
-    h += `<ul class="todo">${holds.slice(0, 6).map((r) => {
-      const fix = (r.reasons.find((x) => x.severity === "blocking" && x.fix) || {}).fix || r.headline;
-      return `<li data-app="${esc(r.app_id)}"><span class="t-ico">${ic("flag")}</span><div><span class="t-id mono">${esc(r.app_id)}</span> <span class="muted">· ${esc(r.name || "")}</span><div class="t-fix">${esc(fix)}</div></div></li>`;
-    }).join("")}</ul>`;
-  } else h += `<div class="empty">${ic("check")}<div>Nothing waiting on applicants.</div></div>`;
-  h += `</div><div class="stack"><div class="card"><div class="card-h"><h3>Decision mix</h3><span class="sub">${total} applications</span></div><div class="card-b">
-      <div class="mix">${DECISIONS.filter((d) => c[d]).map((d) => `<i class="bg-${cls(d)}" style="width:${100 * c[d] / Math.max(total, 1)}%" title="${d}: ${c[d]}"></i>`).join("")}</div>
-      <div class="legend">${DECISIONS.map((d) => `<span><i class="sw bg-${cls(d)}"></i>${d} <b>${c[d]}</b></span>`).join("")}</div></div></div>`;
-  const recent = S.changeLog.slice(-4).reverse();
-  h += `<div class="card"><div class="card-h">${ic("refresh")}<h3>Recent updates</h3><span class="sub">from the assistant</span></div>`;
-  h += recent.length ? `<ul class="todo">${recent.map((e) => `<li><span class="t-ico">${ic("spark")}</span><div><div class="t-fix">“${esc(e.message)}”</div><div class="muted" style="font-size:12px">${esc(e.time)} · ${esc(e.changes.join(", ") || "no decision changes")}</div></div></li>`).join("")}</ul>`
-    : `<div class="card-b muted">No updates yet. Share new facts in the assistant (for example, “APP-012 has now found a ground-floor space”) and the engine re-decides every applicant.</div>`;
-  h += `</div></div></div>`;
-  return h;
+  return h + `</div></div></div>`;
 }
 
 // ---------------------------------------------------------------- views: applications
@@ -676,7 +832,7 @@ function viewApplications() {
   for (const r of rows) {
     const rc = r.ratio == null ? "" : r.ratio >= 1 ? "ratio-ok" : r.ratio >= 0.8 ? "ratio-mid" : "ratio-low";
     h += `<tr class="click" data-app="${esc(r.app_id)}"><td class="mono">${esc(r.app_id)}</td>
-      <td class="who"><b>${esc(r.name || "–")}</b><span>${esc(r.city || "–")} · ${esc(r.pin || "–")}</span></td>
+      <td><div class="who-row">${avatarHtml(r.name, r.app_id, 32)}<div class="who"><b>${esc(r.name || "–")}</b><span>${esc(r.city || "–")} · ${esc(r.pin || "–")}</span></div></div></td>
       <td>${pill(r.decision)}</td>
       <td>${r.territory_id ? `<span class="mono">${esc(r.territory_id)}</span>` : '<span class="faint">none</span>'}</td>
       <td class="num money">${r.offered_lakh != null ? `<b>₹${fmt(r.offered_lakh)}L</b> <span class="${rc}">${r.ratio == null ? "" : Number(r.ratio).toFixed(2) + "×"}</span>` : "–"}<br><span>${r.required_lakh != null ? `needs ₹${fmt(r.required_lakh)}L` : ""}</span></td>
@@ -703,14 +859,14 @@ function viewApplicant() {
   let h = `<div style="margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
     <button class="btn sm ghost" data-view="applications">${ic("left")}All applications</button>
     <select class="input" id="pick" aria-label="Choose applicant" style="max-width:280px">${all.map((i) => `<option value="${esc(i)}" ${i === r.app_id ? "selected" : ""}>${esc(i)} · ${esc(recs[i].name)}</option>`).join("")}</select></div>
-  <div class="card"><div class="profile">
-    <div class="avatar" style="background:hsl(${hue(r.app_id)} 55% 45%)">${esc(initials(r.name))}</div>
-    <div style="min-width:0;flex:1"><h2>${esc(r.name || r.app_id)} ${pill(r.decision, true)}</h2>
+  <div class="card"><div class="cover"></div><div class="profile with-cover">
+    <div class="avatar" style="background:hsl(${hue(r.app_id)} 58% 48%)">${esc(initials(r.name))}</div>
+    <div class="p-body"><h2>${esc(r.name || r.app_id)} ${pill(r.decision, true)}</h2>
       <div class="meta"><span class="mono">${esc(r.app_id)}</span><span>${ic("pin")}${esc(r.city || "?")} · ${esc(r.pin || "?")}</span>
         <span>${ic("map")}${r.territory_id ? `${esc(r.territory_id)} · ${esc(r.tier)} · <span class="tag ${esc(r.priority)}">${esc(r.priority)}</span>` : "No territory"}</span></div>
       <div class="headline">${esc(r.headline)}</div></div>
-    <div class="p-nav"><button class="btn icon sm" ${prev ? `data-app="${esc(prev)}"` : "disabled"} aria-label="Previous applicant">${ic("left")}</button>
-      <button class="btn icon sm" ${next ? `data-app="${esc(next)}"` : "disabled"} aria-label="Next applicant">${ic("right")}</button></div>
+    <div class="p-side">${scoreRing(r.score)}<div class="p-nav"><button class="btn icon sm" ${prev ? `data-app="${esc(prev)}"` : "disabled"} aria-label="Previous applicant">${ic("left")}</button>
+      <button class="btn icon sm" ${next ? `data-app="${esc(next)}"` : "disabled"} aria-label="Next applicant">${ic("right")}</button></div></div>
   </div><div class="metrics">
     <div class="metric"><div class="m-l">Score</div><div class="m-v">${r.score == null ? "–" : fmt(r.score) + "<span class='muted' style='font-size:13px'>/100</span>"}</div><div class="m-s">${esc(r.rank_text || "not ranked")}</div></div>
     <div class="metric"><div class="m-l">Investment</div><div class="m-v">${r.offered_lakh == null ? "–" : "₹" + fmt(r.offered_lakh) + "L"}</div><div class="m-s">${r.required_lakh ? `needs ₹${fmt(r.required_lakh)}L · ${r.ratio == null ? "–" : Number(r.ratio).toFixed(2) + "×"}` : ""}</div></div>
@@ -878,7 +1034,18 @@ document.addEventListener("change", (ev) => {
   else if (id === "pick") go("applicant", { selected: ev.target.value });
   else if (id === "ai") { renderShell(); rerun(); }
 });
+document.addEventListener("mousemove", (ev) => {
+  const t = ev.target.closest && ev.target.closest("[data-tip]"), tip = $("tip");
+  if (!t) { tip.style.display = "none"; return; }
+  tip.textContent = t.getAttribute("data-tip"); tip.style.display = "block";
+  const x = Math.min(ev.clientX + 14, window.innerWidth - tip.offsetWidth - 8);
+  tip.style.left = x + "px"; tip.style.top = (ev.clientY - 36) + "px";
+});
 document.addEventListener("input", (ev) => {
+  if (ev.target.id === "gq") {
+    S.filters = { dec: "", ter: "", q: ev.target.value }; if (S.view !== "applications") S.view = "applications";
+    const pos = ev.target.selectionStart; render(); const el = $("gq"); el.focus(); el.setSelectionRange(pos, pos); return;
+  }
   if (ev.target.id === "f-q") { S.filters.q = ev.target.value; const pos = ev.target.selectionStart; render(); const el = $("f-q"); el.focus(); el.setSelectionRange(pos, pos); }
   if (ev.target.id === "chat-input") { ev.target.style.height = "auto"; ev.target.style.height = Math.min(ev.target.scrollHeight, 120) + "px"; }
 });
@@ -890,7 +1057,8 @@ window.addEventListener("resize", () => syncAssistant());
 
 (async function init() {
   $("brand-mark").innerHTML = ic("store"); $("as-ico").innerHTML = ic("spark"); $("menu").innerHTML = ic("menu");
-  $("as-close").innerHTML = ic("x"); $("send").innerHTML = ic("send");
+  $("as-close").innerHTML = ic("x"); $("send").innerHTML = ic("send"); $("promo-ico").innerHTML = ic("spark");
+  $("promo-btn").innerHTML = ic("spark") + "Open assistant";
   restore();
   if (window.innerWidth <= 1280) S.assistant = false;  // overlay: start closed on smaller screens
   try { META = await (await api("/api/meta")).json(); } catch (e) { META = { llm_available: false }; }
