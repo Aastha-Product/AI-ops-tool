@@ -12,22 +12,28 @@ API key the app works fully: keyword rules read the free text and template sente
 ## Run locally
 
 ```bash
-python -m venv .venv && .venv/Scripts/pip install -r requirements.txt   # or: uv pip install -r requirements.txt
-streamlit run app.py
-pytest -q                                                                # 57 tests, no API key needed
+pip install -r requirements-dev.txt
+uvicorn app:app --reload          # web app at http://localhost:8000
+pytest -q                         # 65 tests, no API key needed
 ```
 
-Optional: `ANTHROPIC_API_KEY` (and `ANTHROPIC_MODEL`, default `claude-sonnet-5-5`) as environment variables or Streamlit
-secrets. The key stays on the server.
+`app.py` is a FastAPI app (JSON API under `/api/*`) serving the single-page front end in `web/index.html`.
+An older Streamlit UI is kept as `streamlit_app.py` (`pip install -r requirements-streamlit.txt`, then
+`streamlit run streamlit_app.py`).
 
-## Deploy (Streamlit Community Cloud)
+Optional: `ANTHROPIC_API_KEY` (and `ANTHROPIC_MODEL`, default `claude-sonnet-5-5`) as environment variables. The key
+stays on the server.
 
-1. Push this folder to a GitHub repository (`app.py` at the repo root).
-2. share.streamlit.io → New app → pick the repo, branch, `app.py`.
-3. Settings → Secrets: `ANTHROPIC_API_KEY = "..."` (optional `ANTHROPIC_MODEL`).
-4. Open the link in a private window and on a phone; open it once before judging to wake it.
+## Deploy (Vercel)
 
-Each browser session has its own data (`st.session_state`), so several judges can use it at once.
+Import the GitHub repository in Vercel. It detects the FastAPI `app` in `app.py` and installs `requirements.txt`; no
+build settings are needed. Add `ANTHROPIC_API_KEY` under Project → Settings → Environment Variables (optional) and
+redeploy. To make the link public, turn off Deployment Protection (Settings → Deployment Protection → Vercel
+Authentication) or share the production domain.
+
+The server keeps no state between requests: the browser holds the uploaded data and sends it with each request, and
+the engine re-runs deterministically. So several judges can use the link at once without interfering, and a page
+refresh keeps your session (stored in the tab's sessionStorage).
 
 ## How a decision is made
 

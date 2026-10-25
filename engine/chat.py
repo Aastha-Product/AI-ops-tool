@@ -549,8 +549,11 @@ def answer_question(msg: str, ids: list[str], result: dict, use_llm: bool) -> st
 
 # ---------------------------------------------------------------- entry point
 def handle(msg: str, apps: list[dict], territories: list[dict], stores: list[dict], result: dict,
-           today: dt.date, use_llm: bool) -> dict:
-    """Process one chat message. Returns {kind, reply, apps?, result?, changes?, updates?}."""
+           today: dt.date, use_llm: bool, signals_fn=None) -> dict:
+    """Process one chat message. Returns {kind, reply, apps?, result?, changes?, updates?}.
+
+    signals_fn(apps) -> {app_id: signals} lets a caller reuse text signals it already
+    has (the stateless web API passes the browser's copy back in)."""
     known = [a["app_id"] for a in apps]
     names = {a["app_id"]: a.get("name") for a in apps}
     ids, unknown = resolve_ids(msg, known, names)
@@ -603,7 +606,7 @@ def handle(msg: str, apps: list[dict], territories: list[dict], stores: list[dic
         return {"kind": "question", "reply": unknown_note + answer_question(msg, ids, result, use_llm)}
 
     new_apps, lines = apply_updates(apps, valid)
-    sig = text_signals.extract_all(new_apps, use_llm)
+    sig = signals_fn(new_apps) if signals_fn else text_signals.extract_all(new_apps, use_llm)
     new_result = run_all(new_apps, territories, stores, today=today, signals=sig, use_llm=use_llm)
     targets = list(dict.fromkeys(u["app_id"] for u in valid))
     reply, changes = describe_update(targets, lines, result, new_result, simulated=is_what_if)

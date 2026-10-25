@@ -1,0 +1,6 @@
+.venv
+__pycache__
+.pytest_cache
+.streamlit
+streamlit_app.py
+requirements-streamlit.txt

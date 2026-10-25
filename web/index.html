@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Franchise Onboarding Engine</title>
+<link rel="icon" href="/favicon.ico">
+<style>
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --text: #111827; --muted: #6b7280; --line: #e5e7eb; --accent: #1f3864; --accent-2: #2f5597;
+  --chip: #eef2f7; --shadow: 0 1px 2px rgba(0,0,0,.05);
+  --ok-bg: #d1fae5; --ok-fg: #065f46; --wait-bg: #fef3c7; --wait-fg: #92400e;
+  --hold-bg: #dbeafe; --hold-fg: #1e3a8a; --no-bg: #fee2e2; --no-fg: #991b1b;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1115; --panel: #171a21; --text: #e5e7eb; --muted: #9ca3af; --line: #2a2f3a; --accent: #8fb3ff; --accent-2: #b4cbff;
+    --chip: #222734; --shadow: none;
+    --ok-bg: #064e3b; --ok-fg: #a7f3d0; --wait-bg: #78350f; --wait-fg: #fde68a;
+    --hold-bg: #1e3a8a; --hold-fg: #bfdbfe; --no-bg: #7f1d1d; --no-fg: #fecaca;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+header { padding: 18px 24px 6px; }
+header h1 { margin: 0; font-size: 1.5rem; }
+header p { margin: 4px 0 0; color: var(--muted); font-size: .9rem; }
+.layout { display: grid; grid-template-columns: minmax(0, 3fr) minmax(320px, 2fr); gap: 20px; padding: 12px 24px 32px; }
+@media (max-width: 900px) { .layout { grid-template-columns: 1fr; padding: 10px 16px 24px; } header { padding: 14px 16px 4px; } }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; box-shadow: var(--shadow); margin-bottom: 16px; }
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 14px; }
+.tabs button { border: 1px solid var(--line); background: var(--panel); color: var(--text); padding: 6px 14px; border-radius: 8px; cursor: pointer; font: inherit; }
+.tabs button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+@media (prefers-color-scheme: dark) { .tabs button.active { color: #0f1115; } }
+h2 { font-size: 1.2rem; margin: 0 0 10px; } h3 { font-size: 1.05rem; margin: 18px 0 8px; }
+.muted { color: var(--muted); font-size: .88rem; }
+.btn { border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 8px; padding: 8px 14px; cursor: pointer; font: inherit; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+@media (prefers-color-scheme: dark) { .btn.primary { color: #0f1115; } }
+.btn:disabled { opacity: .5; cursor: default; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.drop { border: 2px dashed var(--line); border-radius: 10px; padding: 22px; text-align: center; cursor: pointer; margin-bottom: 12px; }
+.drop.over { border-color: var(--accent); }
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+th, td { text-align: left; padding: 7px 9px; border-bottom: 1px solid var(--line); vertical-align: top; white-space: nowrap; }
+td.w { white-space: normal; min-width: 260px; }
+th { background: var(--chip); font-weight: 600; white-space: nowrap; }
+tr.click { cursor: pointer; } tr.click:hover td { background: var(--chip); }
+td.num, th.num { text-align: right; white-space: nowrap; }
+.dec { display: inline-block; padding: 1px 8px; border-radius: 999px; font-weight: 600; font-size: .82rem; white-space: nowrap; }
+.d-Approved { background: var(--ok-bg); color: var(--ok-fg); } .d-Waitlisted { background: var(--wait-bg); color: var(--wait-fg); }
+.d-On-hold { background: var(--hold-bg); color: var(--hold-fg); } .d-Not-approved { background: var(--no-bg); color: var(--no-fg); }
+.counts { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.count { flex: 1 1 110px; border-radius: 10px; padding: 10px 12px; }
+.count b { display: block; font-size: 1.7rem; line-height: 1.1; }
+.filters { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+select, input[type=text] { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--text); }
+.reasons div { margin: 4px 0; }
+.facts { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.fact { background: var(--chip); border-radius: 8px; padding: 3px 9px; font-size: .85rem; }
+.bar { background: var(--chip); border-radius: 6px; height: 8px; min-width: 80px; }
+.bar i { display: block; height: 8px; border-radius: 6px; background: var(--accent-2); }
+.note { background: var(--chip); border-radius: 8px; padding: 10px 12px; font-size: .9rem; }
+details { margin-top: 10px; } summary { cursor: pointer; font-weight: 600; }
+/* chat */
+.chat { position: sticky; top: 12px; display: flex; flex-direction: column; max-height: calc(100vh - 24px); }
+@media (max-width: 900px) { .chat { position: static; max-height: none; } .msgs { max-height: 60vh; } }
+.chat h2 { margin-bottom: 4px; }
+.msgs { flex: 1 1 auto; overflow-y: auto; min-height: 220px; border: 1px solid var(--line); border-radius: 8px; padding: 10px; margin: 8px 0; }
+.msg { margin: 0 0 10px; padding: 8px 10px; border-radius: 10px; font-size: .9rem; }
+.msg.user { background: var(--accent); color: #fff; margin-left: 15%; }
+@media (prefers-color-scheme: dark) { .msg.user { color: #0f1115; } }
+.msg.assistant { background: var(--chip); margin-right: 5%; }
+.msg p { margin: 0 0 6px; } .msg p:last-child { margin: 0; } .msg ul { margin: 4px 0 6px; padding-left: 18px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.chip { border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 999px; padding: 4px 10px; font: inherit; font-size: .82rem; cursor: pointer; }
+.chat form { display: flex; gap: 6px; } .chat form input { flex: 1; }
+.toggle { display: flex; align-items: center; gap: 6px; font-size: .88rem; }
+.busy { position: fixed; top: 10px; right: 14px; background: var(--accent); color: #fff; padding: 6px 12px; border-radius: 8px; display: none; z-index: 9; font-size: .88rem; }
+@media (prefers-color-scheme: dark) { .busy { color: #0f1115; } }
+.err { background: var(--no-bg); color: var(--no-fg); padding: 8px 12px; border-radius: 8px; margin-bottom: 10px; }
+.ok { background: var(--ok-bg); color: var(--ok-fg); padding: 8px 12px; border-radius: 8px; margin: 10px 0; }
+</style>
+</head>
+<body>
+<div class="busy" id="busy">Working…</div>
+<header>
+  <h1>🏬 Franchise Partner Onboarding Engine</h1>
+  <p>Upload applications → every applicant gets a decision, the reasons, next steps and (if approved) a dated onboarding checklist and training plan. Rules decide; AI only explains.</p>
+</header>
+<div class="layout">
+  <main>
+    <div class="tabs" id="tabs"></div>
+    <div id="error"></div>
+    <div id="view"></div>
+  </main>
+  <aside class="card chat" id="chat">
+    <h2>💬 Ask or update</h2>
+    <label class="toggle"><input type="checkbox" id="ai"> <span id="ai-label">Use AI for free text &amp; answers</span></label>
+    <div class="muted" id="ai-note"></div>
+    <div class="msgs" id="msgs"></div>
+    <div class="chips" id="chips"></div>
+    <form id="chat-form"><input type="text" id="chat-input" placeholder="e.g. Why is APP-007 on hold?" autocomplete="off" maxlength="2000"><button class="btn primary" type="submit">Send</button></form>
+    <div class="row" style="margin-top:8px"><button class="btn" id="reset">↺ Reset to uploaded file</button><button class="btn" id="clear">Clear chat</button></div>
+  </aside>
+</div>
+<input type="file" id="file" accept=".xlsx,.xlsm" hidden>
+<script>
+"use strict";
+const VIEWS = ["Upload", "Results", "Applicant", "How it decides"];
+const SEV = { blocking: "⛔", decision: "📌", warning: "⚠️", info: "ℹ️" };
+const DECISIONS = ["Approved", "Waitlisted", "On hold", "Not approved"];
+let S = { view: "Upload", session: null, original: null, result: null, summary: null, warnings: [], fileName: null,
+          messages: [], changeLog: [], selected: null, filters: { dec: "", ter: "", q: "" } };
+let META = null;
+
+// ---------------------------------------------------------------- utilities
+const $ = (id) => document.getElementById(id);
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmt = (x, d = 1) => (x === null || x === undefined || x === "") ? "–" : (Math.abs(x - Math.round(x)) < 1e-9 ? String(Math.round(x)) : Number(x).toFixed(d));
+const decCls = (d) => "d-" + String(d).replace(/\s+/g, "-");
+const badge = (d) => `<span class="dec ${decCls(d)}">${esc(d)}</span>`;
+function md(text) {
+  const lines = esc(text).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").split("\n");
+  let html = "", list = false;
+  for (const l of lines) {
+    if (/^\s*[-•] /.test(l)) { if (!list) { html += "<ul>"; list = true; } html += `<li>${l.replace(/^\s*[-•] /, "")}</li>`; }
+    else { if (list) { html += "</ul>"; list = false; } if (l.trim()) html += `<p>${l}</p>`; }
+  }
+  return html + (list ? "</ul>" : "");
+}
+function save() { try { sessionStorage.setItem("fe_state", JSON.stringify(S)); } catch (e) { /* storage full or blocked */ } }
+function restore() { try { const s = JSON.parse(sessionStorage.getItem("fe_state") || "null"); if (s && s.result) S = Object.assign(S, s); } catch (e) {} }
+function busy(on) { $("busy").style.display = on ? "block" : "none"; document.querySelectorAll("button, #chat-input").forEach((b) => b.disabled = on); }
+function showError(msg) { $("error").innerHTML = msg ? `<div class="err">${esc(msg)}</div>` : ""; }
+async function api(path, opts = {}) {
+  const r = await fetch(path, opts);
+  if (!r.ok) { let m = r.statusText; try { const j = await r.json(); m = j.detail || m; } catch (e) {} throw new Error(m); }
+  return r;
+}
+async function postJSON(path, body) {
+  return (await api(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })).json();
+}
+const useLLM = () => $("ai").checked;
+const sessionBody = (extra = {}) => Object.assign({}, S.session, { use_llm: useLLM() }, extra);
+
+// ---------------------------------------------------------------- loading data
+function applyLoad(j) {
+  S.session = j.session; S.original = JSON.parse(JSON.stringify(j.session)); S.result = j.result; S.summary = j.summary;
+  S.warnings = j.warnings; S.fileName = j.file_name; S.messages = []; S.changeLog = []; S.selected = null;
+  S.filters = { dec: "", ter: "", q: "" };
+  S.view = j.result && j.summary.applications ? "Results" : "Upload";
+}
+async function loadSample() {
+  busy(true); showError("");
+  try { applyLoad(await postJSON(`/api/sample?use_llm=${useLLM()}`, {})); } catch (e) { showError(e.message); }
+  busy(false); render();
+}
+async function loadFile(f) {
+  if (!f) return;
+  busy(true); showError("");
+  try {
+    const fd = new FormData(); fd.append("file", f);
+    applyLoad(await (await api(`/api/upload?use_llm=${useLLM()}`, { method: "POST", body: fd })).json());
+  } catch (e) { showError(e.message); }
+  busy(false); render();
+}
+async function rerun() {
+  if (!S.session) return;
+  busy(true);
+  try { const j = await postJSON("/api/run", sessionBody()); S.result = j.result; S.session.signals = j.signals; S.session.use_llm = j.use_llm; }
+  catch (e) { showError(e.message); }
+  busy(false); render();
+}
+async function resetToUpload() {
+  if (!S.original) return;
+  S.session = JSON.parse(JSON.stringify(S.original)); S.changeLog = [];
+  S.messages.push({ role: "assistant", content: "Reset: all chat updates dropped; decisions are back to the uploaded file." });
+  await rerun();
+}
+async function downloadExport() {
+  busy(true);
+  try {
+    const r = await api("/api/export", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(sessionBody({ change_log: S.changeLog })) });
+    const blob = await r.blob(); const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = `franchise_decisions_${S.result.run_date}.xlsx`; a.click(); URL.revokeObjectURL(a.href);
+  } catch (e) { showError(e.message); }
+  busy(false);
+}
+
+// ---------------------------------------------------------------- chat
+async function send(text) {
+  text = (text || "").trim(); if (!text) return;
+  S.messages.push({ role: "user", content: text });
+  if (!S.result) { S.messages.push({ role: "assistant", content: "Upload a file (or click **Try with sample file**) first." }); render(); return; }
+  renderChat(); busy(true);
+  try {
+    const j = await postJSON("/api/chat", sessionBody({ message: text }));
+    S.messages.push({ role: "assistant", content: j.reply });
+    if (j.result) {
+      S.session.applications = j.applications; S.session.signals = j.signals; S.result = j.result;
+      const affected = [...new Set([...(j.targets || []), ...(j.changes || []).map((c) => c.app_id)])];
+      S.changeLog.push({ time: new Date().toLocaleTimeString(), message: text, parsed_by: j.parsed_by, updates: j.updates, affected,
+                         changes: (j.changes || []).filter((c) => c.old !== c.new).map((c) => `${c.app_id}: ${c.old} → ${c.new}`) });
+    }
+  } catch (e) { S.messages.push({ role: "assistant", content: "Sorry, that failed: " + e.message }); }
+  busy(false); render();
+}
+function examplePrompts() {
+  if (!S.result) return ["Why is APP-007 on hold?", "APP-012 has now found a ground-floor space"];
+  const recs = Object.values(S.result.records), out = [];
+  const hold = recs.find((r) => r.decision === "On hold"); if (hold) out.push(`Why is ${hold.app_id} on hold?`);
+  for (const t of S.result.territories) {
+    const ranked = recs.filter((r) => r.territory_id === t.territory_id && r.rank).sort((a, b) => a.rank - b.rank);
+    const a = ranked.find((r) => r.decision === "Approved"), b = ranked.find((r) => r.decision === "Waitlisted");
+    if (a && b) { out.push(`Why did ${a.app_id} beat ${b.app_id}?`, `Who is waitlisted in ${t.territory_id}?`); break; }
+  }
+  const upper = recs.find((r) => r.decision === "On hold" && r.reasons.some((x) => x.code === "FLOOR_UNSUITABLE"));
+  if (upper) out.push(`${upper.app_id} has now found a ground-floor space`);
+  const gap = recs.find((r) => r.reasons.some((x) => x.code === "FUNDING_GAP"));
+  if (gap && gap.required_lakh) out.push(`${gap.app_id} can now invest ₹${Math.floor(gap.required_lakh) + 5} lakh`);
+  const appr = recs.find((r) => r.decision === "Approved"); if (appr) out.push(`${appr.app_id} has withdrawn`);
+  return out.slice(0, 6);
+}
+function renderChat() {
+  const box = $("msgs");
+  box.innerHTML = S.messages.length ? S.messages.map((m) => `<div class="msg ${m.role}">${md(m.content)}</div>`).join("")
+    : `<div class="muted">Ask why a decision was made, compare applicants, or give new facts – decisions re-run instantly and knock-on effects are listed.</div>`;
+  box.scrollTop = box.scrollHeight;
+  $("chips").innerHTML = examplePrompts().map((p) => `<button class="chip" data-prompt="${esc(p)}">${esc(p)}</button>`).join("");
+  $("reset").disabled = !S.changeLog.length;
+}
+
+// ---------------------------------------------------------------- views
+function renderTabs() {
+  $("tabs").innerHTML = VIEWS.map((v) => `<button class="${v === S.view ? "active" : ""}" data-view="${v}">${v}</button>`).join("");
+}
+function viewUpload() {
+  let h = `<div class="card"><h2>1 · Upload the applications file</h2>
+    <p class="muted">Use the case template as-is: Sheet 1 Applications, Sheet 2 Territories (Sheet 3 Existing stores is fixed and bundled).</p>
+    <div class="drop" id="drop">📄 Drop the .xlsx file here or <b>click to choose</b></div>
+    <div class="row"><button class="btn primary" id="sample">▶ Try with sample file</button>
+    <a class="btn" href="/api/template" download>⬇ Download empty template</a></div>`;
+  if (S.summary) {
+    const s = S.summary;
+    h += `<div class="ok"><b>${esc(S.fileName)}</b>: ${s.applications} applications, ${s.territories} territories, ${s.stores} existing stores read
+      (${s.stores_source === "upload" ? "from the file" : "bundled list"}); ${s.rows_with_warnings} row(s) with warnings.</div>`;
+    if (!s.applications) h += `<p class="muted">No applicant rows were found. Fill the Applications sheet from row 4 and upload again.</p>`;
+    if (S.warnings.length) {
+      h += `<details ${S.warnings.length <= 6 ? "open" : ""}><summary>Upload warnings (${S.warnings.length})</summary><div class="table-wrap" style="margin-top:8px"><table>
+        <tr><th>Sheet</th><th>Row</th><th>Message</th></tr>${S.warnings.map((w) => `<tr><td>${esc(w.sheet)}</td><td>${esc(w.row ?? "")}</td><td class="w">${esc(w.message)}</td></tr>`).join("")}</table></div></details>`;
+    }
+    if (S.result && s.applications) h += `<p><button class="btn" data-view="Results">Go to results →</button></p>`;
+  }
+  return h + `</div>`;
+}
+function viewResults() {
+  if (!S.result) return `<div class="card">Upload a file or click <b>Try with sample file</b> on the Upload tab.</div>`;
+  const R = S.result, recs = Object.values(R.records), c = R.counts;
+  let h = "";
+  if (R.invariant_errors.length) h += `<div class="err">Rule check failed: ${esc(R.invariant_errors.join(" "))}</div>`;
+  h += `<div class="counts">${DECISIONS.map((d) => `<div class="count ${decCls(d)}">${d}<b>${c[d]}</b></div>`).join("")}</div>
+    <p class="muted">Run date ${esc(R.run_date)} · ${S.session.use_llm ? "AI reading of free text" : "keyword rules for free text"} · no two stores in one pin (checked after every run) ✔</p>`;
+  h += `<div class="card"><h3 style="margin-top:0">Territories</h3><div class="table-wrap"><table><tr><th>Territory</th><th>City</th><th>Tier</th><th>Priority</th>
+    <th class="num">Slots</th><th class="num">Applicants</th><th class="num">Approved</th><th class="num">Waitlisted</th><th class="num">On hold</th><th class="num">Not approved</th><th>Pins approved</th><th>Existing-store pins</th></tr>
+    ${R.territories.map((t) => `<tr><td>${esc(t.territory_id)}</td><td>${esc(t.city)}</td><td>${esc(t.tier)}</td><td>${esc(t.priority)}</td><td class="num">${t.slots}</td><td class="num">${t.applicants}</td>
+      <td class="num">${t.approved}</td><td class="num">${t.waitlisted}</td><td class="num">${t.on_hold}</td><td class="num">${t.not_approved}</td><td>${esc(t.pins_used)}</td><td>${esc(t.existing_store_pins)}</td></tr>`).join("")}
+    </table></div></div>`;
+  const f = S.filters, ters = [...new Set(recs.map((r) => r.territory_id || "–"))].sort();
+  const rows = recs.filter((r) => (!f.dec || r.decision === f.dec) && (!f.ter || (r.territory_id || "–") === f.ter) &&
+    (!f.q || [r.app_id, r.name, r.city, r.pin].join(" ").toLowerCase().includes(f.q.toLowerCase())));
+  h += `<div class="card"><h3 style="margin-top:0">Applicants</h3>
+    <div class="filters"><select id="f-dec"><option value="">All decisions</option>${DECISIONS.map((d) => `<option ${f.dec === d ? "selected" : ""}>${d}</option>`).join("")}</select>
+    <select id="f-ter"><option value="">All territories</option>${ters.map((t) => `<option ${f.ter === t ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>
+    <input type="text" id="f-q" placeholder="Search ID, name, city or pin" value="${esc(f.q)}"></div>
+    <p class="muted">Click a row to open the applicant's full explanation.</p>
+    <div class="table-wrap"><table><tr><th>ID</th><th>Name</th><th>City</th><th>Pin</th><th>Territory</th><th class="num">Required ₹L</th><th class="num">Offered ₹L</th>
+    <th class="num">Ratio</th><th class="num">Score</th><th>Rank</th><th>Decision</th><th>Why (one line)</th></tr>
+    ${rows.map((r) => `<tr class="click" data-app="${esc(r.app_id)}"><td>${esc(r.app_id)}</td><td>${esc(r.name)}</td><td>${esc(r.city)}</td><td>${esc(r.pin)}</td>
+      <td>${esc(r.territory_id || "–")}</td><td class="num">${fmt(r.required_lakh)}</td><td class="num">${fmt(r.offered_lakh)}</td><td class="num">${r.ratio == null ? "–" : Number(r.ratio).toFixed(2)}</td>
+      <td class="num">${fmt(r.score)}</td><td>${esc(r.rank_text || "")}</td><td>${badge(r.decision)}</td><td class="w">${esc(r.headline)}</td></tr>`).join("")}
+    </table></div>
+    <p><button class="btn" id="export">⬇ Download results (Excel)</button></p>`;
+  if (S.changeLog.length) {
+    h += `<details><summary>Change log (${S.changeLog.length} chat update(s))</summary>${S.changeLog.slice().reverse().map((e) =>
+      `<p><b>${esc(e.time)}</b> – “${esc(e.message)}” (${esc(e.parsed_by)})<br>Applied: ${esc(e.updates.join("; "))}<br>Decision changes: ${esc(e.changes.join(", ") || "none")}</p>`).join("")}</details>`;
+  }
+  return h + `</div>`;
+}
+function viewApplicant() {
+  if (!S.result) return `<div class="card">Upload a file first.</div>`;
+  const recs = S.result.records, ids = Object.keys(recs);
+  if (!recs[S.selected]) S.selected = ids[0];
+  const r = recs[S.selected];
+  let h = `<div class="card"><select id="pick" style="max-width:100%">${ids.map((i) => `<option value="${esc(i)}" ${i === r.app_id ? "selected" : ""}>${esc(i)} · ${esc(recs[i].name)} · ${esc(recs[i].decision)}</option>`).join("")}</select>
+    <h2 style="margin-top:12px">${esc(r.app_id)} · ${esc(r.name || "")} ${badge(r.decision)}</h2><p><b>${esc(r.headline)}</b></p><div class="facts">`;
+  h += `<span class="fact">📍 ${esc(r.city || "?")} · pin ${esc(r.pin || "?")}</span>`;
+  h += `<span class="fact">🗺 ${r.territory_id ? `${esc(r.territory_id)} (${esc(r.tier)}, ${esc(r.priority)} priority, ${r.slots} slot(s))` : "no territory"}</span>`;
+  if (r.required_lakh) h += `<span class="fact">💰 needs ₹${fmt(r.required_lakh)} L, offers ₹${fmt(r.offered_lakh)} L${r.ratio != null ? ` (ratio ${Number(r.ratio).toFixed(2)})` : ""}</span>`;
+  if (r.payback_months) h += `<span class="fact">⏱ payback ≈ ${fmt(r.payback_months)} months (assumption-based)</span>`;
+  if (r.nearest_store) h += `<span class="fact">🏬 nearest store ${esc(r.nearest_store.store_id)} (${esc(r.nearest_store.city)}) ${fmt(r.nearest_store.km)} km${r.nearest_store.exact ? "" : " (approx.)"}</span>`;
+  h += `</div><h3>Why</h3><div class="reasons">${r.reasons.map((x) => `<div>${SEV[x.severity] || "•"} ${esc(x.sentence)}</div>`).join("")}</div>`;
+  if (r.score_breakdown) {
+    h += `<h3>Score: ${fmt(r.score)} / 100</h3><div class="table-wrap"><table><tr><th>Factor</th><th>Input</th><th class="num">Points</th><th></th><th>Why</th></tr>
+      ${r.score_breakdown.map((b) => `<tr><td>${esc(b.label)}</td><td>${esc(b.input)}</td><td class="num">${fmt(b.points)} / ${b.max}</td>
+      <td><div class="bar"><i style="width:${Math.round(100 * b.points / b.max)}%"></i></div></td><td class="w">${esc(b.why)}</td></tr>`).join("")}</table></div>`;
+  }
+  if (r.territory_id) {
+    const comp = Object.values(recs).filter((x) => x.territory_id === r.territory_id).sort((a, b) => (a.rank || 999) - (b.rank || 999) || a.app_id.localeCompare(b.app_id));
+    h += `<h3>Rank and competitors in ${esc(r.territory_id)}${r.rank_text ? " — " + esc(r.rank_text) : ""}</h3><div class="table-wrap"><table>
+      <tr><th>Rank</th><th>ID</th><th>Name</th><th>Pin</th><th class="num">Score</th><th>Decision</th></tr>
+      ${comp.map((x) => `<tr class="click" data-app="${esc(x.app_id)}"><td>${x.rank || "–"}</td><td>${esc(x.app_id)}</td><td>${esc(x.name)}</td><td>${esc(x.pin)}</td>
+      <td class="num">${fmt(x.score)}</td><td>${badge(x.decision)}</td></tr>`).join("")}</table></div>`;
+  }
+  h += `<h3>Next steps</h3><ul>${r.next_steps.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>`;
+  if (r.checklist) {
+    const ck = r.checklist;
+    h += `<h3>Onboarding checklist — opening ${esc(ck.planned_opening_text)} ${ck.fast_track ? '<span class="dec d-On-hold">Fast-track onboarding</span>' : ""}</h3>
+      <p class="muted">Scheduled ${esc(ck.plan.scheduled)} · ${esc(ck.space)} space · ${ck.staff} staff${ck.plan.gap ? " · " + esc(ck.plan.gap) : ""}</p>
+      <div class="table-wrap"><table><tr><th>#</th><th>Task</th><th>When</th><th>Dates</th><th>Done when</th><th>Detail</th></tr>
+      ${ck.steps.map((s) => `<tr><td>${s.step}</td><td class="w">${esc(s.name)}</td><td>${esc(s.timing)}</td><td>${esc(s.dates)}</td><td>${esc(s.done_when)}</td><td class="w">${esc(s.detail)}</td></tr>`).join("")}</table></div>`;
+  }
+  if (r.training) {
+    const t = r.training;
+    h += `<h3>Training plan — ${esc(t.track_label || t.track)} in ${esc(t.language)}</h3>
+      <p><b>${esc(t.duration_text)}</b> (${esc(t.why)})${t.window ? ", " + esc(t.window) : ""}. ${esc(t.format)}</p>
+      <p>Modules: ${t.modules.map(esc).join(" · ")}</p><p class="muted">${esc(t.staff_training)}</p>`;
+  }
+  if (r.summary_line) h += `<div class="note">${esc(r.summary_line)}</div>`;
+  const sg = r.signals || {}, nice = (v) => esc(String(v || "").replace(/_/g, " "));
+  h += `<details><summary>Application as uploaded, and what was read from the free text</summary><div class="table-wrap" style="margin-top:8px"><table>
+    ${Object.entries(r.inputs).map(([k, v]) => `<tr><th>${esc(k)}</th><td class="w">${esc(v ?? "")}</td></tr>`).join("")}</table></div>
+    <p>Free-text reading (${esc(sg.source)}): business = <b>${nice(sg.business_type)}</b>, funding = <b>${nice(sg.funding_status)}</b>,
+    space = <b>${nice(sg.space_claims)}</b>, floor = <b>${nice(sg.floor_claim)}</b>${sg.deadline_text ? `, deadline = <i>${esc(sg.deadline_text)}</i>` : ""}. ${esc(sg.summary || "")}</p>`;
+  if (r.required_lakh) {
+    const p = r.cost_parts_lakh;
+    h += `<p>Cost model (${esc(r.tier)}, ${fmt(r.size_for_costing)} sq ft${r.size_known ? "" : " assumed"}, ${esc(String(r.costing_space).toLowerCase())}):
+      fee ${fmt(p.franchise_fee, 2)} + fit-out ${fmt(p.fitout, 2)} + inventory ${fmt(p.inventory, 2)} + working capital ${fmt(p.working_capital, 2)} + rent deposit ${fmt(p.rent_deposit, 2)} = <b>₹${fmt(r.required_lakh)} lakh</b>.</p>`;
+  }
+  h += `</details><h3>Change history</h3>`;
+  const log = S.changeLog.filter((e) => e.affected.includes(r.app_id));
+  h += log.length ? `<ul>${log.map((e) => `<li>${esc(e.time)} – “${esc(e.message)}” → ${esc(e.updates.join("; "))}</li>`).join("")}</ul>` : `<p class="muted">No chat updates affected this applicant.</p>`;
+  return h + `</div>`;
+}
+function viewMethod() {
+  if (!META) return `<div class="card">Loading…</div>`;
+  const w = META.score_weights, a = META.adequacy;
+  const tiers = Object.keys(META.cost_model);
+  return `<div class="card"><h2>How decisions are made</h2>
+  <p><b>Rules decide, AI explains.</b> Every decision comes from fixed rules and a score card (same input → same output). The AI only reads messy free text into fixed fields and phrases answers; without it, keyword rules and templates do the same job.</p>
+  <ol><li><b>Gate A – data:</b> missing required fields, invalid pin, city/pin or city/state mismatch, contradictions → <b>On hold</b> with the exact fix.</li>
+  <li><b>Gate B – location:</b> pin in no territory, or pin already has a brand store → <b>Not approved</b> (alternatives offered).</li>
+  <li><b>Gate C – readiness:</b> funds &lt; ${Math.round(a.not_approved_below * 100)}% of the store's cost → <b>Not approved</b>; ${Math.round(a.not_approved_below * 100)}–100% → <b>On hold</b>; no space, upper floor (non-mall), &lt; ${META.min_size_sqft} sq ft, or funding not confirmed → <b>On hold</b>.</li>
+  <li><b>Score</b> (100 points), then <b>allocate</b> per territory: walk the ranking; pin already won → Waitlisted; slots full → Waitlisted; else Approved.</li></ol>
+  <h3>Cost to open a store (team assumptions, scaled from public Lenskart figures)</h3>
+  <div class="table-wrap"><table><tr><th>Tier</th><th class="num">Franchise fee ₹L</th><th class="num">Fit-out ₹/sq ft</th><th class="num">Inventory ₹L</th><th class="num">Working capital ₹L</th><th class="num">Rent ₹/sq ft/month</th><th class="num">Revenue ₹/sq ft/month</th></tr>
+  ${tiers.map((t) => { const c = META.cost_model[t]; return `<tr><td>${t}</td><td class="num">${fmt(c.franchise_fee / 1e5)}</td><td class="num">${c.fitout_per_sqft}</td><td class="num">${fmt(c.inventory / 1e5)}</td><td class="num">${fmt(c.working_capital / 1e5)}</td><td class="num">${c.rent_per_sqft_month}</td><td class="num">${META.revenue_model[t].revenue_per_sqft_month}</td></tr>`; }).join("")}</table></div>
+  <p class="muted">Rent deposit = ${META.rent_deposit_months} months' rent (rented spaces only). Net margin ${Math.round(META.net_margin * 100)}% for payback.</p>
+  <p>Worked examples: ${META.worked_examples.map((e) => `${e.tier}, ${e.size} sq ft ${e.space.toLowerCase()} = <b>₹${fmt(e.required_lakh)} L</b>`).join(" · ")}</p>
+  <h3>Score card</h3>
+  <p>Investment adequacy ${w.investment_adequacy} (ratio 1.0 → ${a.base_points_at_1}, linear to ${w.investment_adequacy} at ${a.full_points_at}×) · retail experience ${w.retail_experience} · business background ${w.business_background} · space quality ${w.space_quality} · territory priority ${w.territory_priority} · location &amp; cannibalisation ${w.location} (&gt; 3 km = 15, 1.5–3 km = 8, &lt; 1.5 km = 0) · timeline fit ${w.timeline_fit} · payback ${w.payback} (≤ 18 months = 5, 18–30 = 3).</p>
+  <p><b>Tie-break:</b> higher score → higher investment adequacy → more retail experience → shorter time to open → lower Application ID.</p>
+  <p><b>Onboarding:</b> checklist scheduled backwards from the target launch (forwards from today if the target is unrealistic); High-priority territories are fast-tracked. Training track by experience (0 yrs Foundation 10 days + 2 weeks shadowing, 1–5 yrs Standard 6 days + 1 week, 6+ yrs Fast track 3 days) in the applicant's language, shadowing at the nearest existing store.</p>
+  <p class="muted">Distances use Department of Posts pin-code coordinates (data.gov.in, Government Open Data Licence).</p></div>`;
+}
+function render() {
+  renderTabs();
+  $("view").innerHTML = { Upload: viewUpload, Results: viewResults, Applicant: viewApplicant, "How it decides": viewMethod }[S.view]();
+  renderChat(); save();
+}
+
+// ---------------------------------------------------------------- events
+document.addEventListener("click", (ev) => {
+  const t = ev.target.closest("[data-view],[data-app],[data-prompt],#sample,#export,#drop");
+  if (!t) return;
+  if (t.dataset.view) { S.view = t.dataset.view; render(); window.scrollTo(0, 0); }
+  else if (t.dataset.app) { S.selected = t.dataset.app; S.view = "Applicant"; render(); window.scrollTo(0, 0); }
+  else if (t.dataset.prompt) send(t.dataset.prompt);
+  else if (t.id === "sample") loadSample();
+  else if (t.id === "export") downloadExport();
+  else if (t.id === "drop") $("file").click();
+});
+document.addEventListener("change", (ev) => {
+  const id = ev.target.id;
+  if (id === "file") { loadFile(ev.target.files[0]); ev.target.value = ""; }
+  else if (id === "f-dec") { S.filters.dec = ev.target.value; render(); }
+  else if (id === "f-ter") { S.filters.ter = ev.target.value; render(); }
+  else if (id === "pick") { S.selected = ev.target.value; render(); }
+  else if (id === "ai") rerun();
+});
+document.addEventListener("input", (ev) => {
+  if (ev.target.id === "f-q") {
+    S.filters.q = ev.target.value; const pos = ev.target.selectionStart; render();
+    const el = $("f-q"); el.focus(); el.setSelectionRange(pos, pos);
+  }
+});
+document.addEventListener("dragover", (ev) => { const d = ev.target.closest("#drop"); if (d) { ev.preventDefault(); d.classList.add("over"); } });
+document.addEventListener("dragleave", (ev) => { const d = ev.target.closest("#drop"); if (d) d.classList.remove("over"); });
+document.addEventListener("drop", (ev) => { const d = ev.target.closest("#drop"); if (d) { ev.preventDefault(); d.classList.remove("over"); loadFile(ev.dataTransfer.files[0]); } });
+$("chat-form").addEventListener("submit", (ev) => { ev.preventDefault(); const v = $("chat-input").value; $("chat-input").value = ""; send(v); });
+$("reset").addEventListener("click", resetToUpload);
+$("clear").addEventListener("click", () => { S.messages = []; render(); });
+
+(async function init() {
+  restore();
+  try { META = await (await api("/api/meta")).json(); } catch (e) { META = { llm_available: false }; }
+  $("ai").disabled = !META.llm_available;
+  $("ai").checked = META.llm_available && (S.session ? !!S.session.use_llm : true);
+  $("ai-note").textContent = META.llm_available ? `Model: ${META.model}` : "AI off (no API key set) – answers come from templates over the stored reasons.";
+  render();
+})();
+</script>
+</body>
+</html>
