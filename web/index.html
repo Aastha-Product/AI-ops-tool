@@ -828,8 +828,10 @@ function stackBars(rows, byPin) {
 }
 // Store utilization: capacity = pin codes in the territory (one store per pin).
 function utilizationPanel(R) {
-  const ts = R.territories.slice().sort((a, b) => b.open_pin_count - a.open_pin_count || a.territory_id.localeCompare(b.territory_id));
-  const sum = (k) => R.territories.reduce((a, t) => a + (t[k] || 0), 0);
+  // defaults keep the panel safe if a territory summary lacks the capacity fields
+  const ts = R.territories.map((t) => ({ pin_capacity: 0, existing_stores: 0, stores_after_run: 0, open_pins: [], open_pin_count: 0, pipeline_ids: [], approved: 0, ...t }))
+    .sort((a, b) => b.open_pin_count - a.open_pin_count || a.territory_id.localeCompare(b.territory_id));
+  const sum = (k) => ts.reduce((a, t) => a + (t[k] || 0), 0);
   const cap = sum("pin_capacity"), after = sum("stores_after_run"), open = sum("open_pin_count"), existing = sum("existing_stores"), newly = sum("approved");
   const maxCap = Math.max(1, ...ts.map((t) => t.pin_capacity));
   const pctOf = (n, d) => (d ? Math.round(100 * n / d) : 0);
@@ -1155,9 +1157,17 @@ function render() {
   PK.open = false;
   if (!S.result && VIEWS.find((v) => v.key === S.view)?.needs) S.view = "upload";
   renderShell();
-  const fn = { upload: viewUpload, dashboard: viewDashboard, applications: viewApplications, applicant: viewApplicant, method: viewMethod }[S.view];
-  $("view").innerHTML = fn();
-  renderMsgs(); syncAssistant(); save();
+  const fn = { upload: viewUpload, dashboard: viewDashboard, applications: viewApplications, applicant: viewApplicant, method: viewMethod }[S.view] || viewUpload;
+  try {
+    $("view").innerHTML = fn();
+  } catch (e) {  // never leave a blank page: offer to re-run the decisions on the saved data
+    console.error(e);
+    $("view").innerHTML = `<div class="card"><div class="empty">${ic("alert")}<div><b>This view could not be shown.</b></div>
+      <p class="muted" style="margin:6px 0 14px">The saved results may be from an older version of the app.</p>
+      ${S.session ? `<button class="btn primary" data-action="rerun">${ic("refresh")}Re-run decisions</button>` : `<button class="btn primary" data-view="upload">${ic("upload")}Upload data</button>`}</div></div>`;
+  }
+  try { renderMsgs(); } catch (e) { console.error(e); }
+  syncAssistant(); save();
 }
 
 // ---------------------------------------------------------------- events
@@ -1179,6 +1189,7 @@ document.addEventListener("click", (ev) => {
   else if (t.dataset.ter) { S.filters = { dec: "", ter: t.dataset.ter, q: "" }; go("applications"); }
   else if (t.dataset.sort) { const k = t.dataset.sort; S.sort = { key: k, dir: S.sort.key === k ? -S.sort.dir : 1 }; render(); }
   else if (t.dataset.tab) { S.tab = t.dataset.tab; render(); }
+  else if (t.dataset.action === "rerun") rerun();
   else if (t.dataset.action === "dclear") { S.dash = { ter: "", pin: "", tier: "" }; render(); }
   else if (t.dataset.action === "sample") loadSample();
   else if (t.dataset.action === "export") downloadExport();
@@ -1240,7 +1251,8 @@ window.addEventListener("resize", () => syncAssistant());
   restore();
   if (window.innerWidth <= 1280) S.assistant = false;  // overlay: start closed on smaller screens
   try { META = await (await api("/api/meta")).json(); } catch (e) { META = { llm_available: false }; }
-  render();
+  // Saved results may come from an older engine version: re-decide the saved data so every view gets current fields.
+  if (S.session) await rerun(); else render();
 })();
 </script>
 </body>
