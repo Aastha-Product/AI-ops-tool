@@ -1,10 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Partnerly · Franchise Onboarding Engine</title>
 <meta name="description" content="Franchise partner acquisition, geo-selection and onboarding decisions.">
+<script>/* dark by default; a saved choice wins, applied before first paint */ try { var t = localStorage.getItem("partnerly-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}</script>
 <link rel="icon" href="/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,6 +13,7 @@
 <style>
 /* ------------------------------------------------------------------ tokens */
 :root {
+  color-scheme: light;
   --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
   --bg: #f3f4f8; --surface: #ffffff; --surface-2: #f8f9fc; --surface-3: #eef0f6;
@@ -44,8 +46,8 @@
   --shadow-lg: 0 20px 48px rgba(15,23,42,.18);
   --radius: 16px; --radius-sm: 10px;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
+:root[data-theme="dark"] {
+    color-scheme: dark;
     --bg: #0b0f1a; --surface: #121829; --surface-2: #161d31; --surface-3: #1d2540;
     --border: #232b44; --border-strong: #323c5c;
     --text: #e8ebf4; --text-2: #c2c8d8; --muted: #8b93a9; --faint: #646d86;
@@ -64,7 +66,6 @@
     --hold: #84caff; --hold-bg: #0b2240; --hold-bd: #1d4f8c;
     --no: #fda29b; --no-bg: #36110d; --no-bd: #7a271a;
     --shadow-sm: none; --shadow: none; --shadow-lg: 0 20px 48px rgba(0,0,0,.55);
-  }
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; }
@@ -606,6 +607,8 @@ const ICONS = {
   shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
   arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
   chevdown: '<path d="M6 9l6 6 6-6"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  moon: '<path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/>',
   mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6.5l8.5 6 8.5-6"/>',
   copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/>',
   external: '<path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/>',
@@ -776,7 +779,9 @@ function renderShell() {
   }).join("");
   $("crumbs").textContent = S.result ? `${S.fileName || "Dataset"} · run ${S.result.run_date}` : "No data loaded";
   $("title").textContent = S.view === "applicant" && S.result && S.result.records[S.selected] ? `${S.selected} · ${S.result.records[S.selected].name || ""}` : v.title;
-  let a = S.result ? `<button class="btn sm" data-action="export" title="Download all decisions as Excel">${ic("download")}<span class="lbl">Export</span></button>` : "";
+  const dark = document.documentElement.getAttribute("data-theme") !== "light";
+  let a = `<button class="btn sm icon" data-action="theme" title="Switch to ${dark ? "light" : "dark"} theme" aria-label="Switch to ${dark ? "light" : "dark"} theme">${ic(dark ? "sun" : "moon")}</button>`;
+  a += S.result ? `<button class="btn sm" data-action="export" title="Download all decisions as Excel">${ic("download")}<span class="lbl">Export</span></button>` : "";
   a += `<button class="btn sm ${S.assistant ? "" : "primary"}" data-action="assistant" title="Ask why, or share new facts">${ic("spark")}<span class="lbl">Assistant</span></button>`;
   a += `<div class="me hide-sm"><div class="av">${ic("store")}</div><div><b>Partnerly</b><span>Expansion Team · Karnataka</span></div></div>`;
   $("top-actions").innerHTML = a;
@@ -1299,6 +1304,12 @@ document.addEventListener("click", (ev) => {
   else if (t.dataset.sort) { const k = t.dataset.sort; S.sort = { key: k, dir: S.sort.key === k ? -S.sort.dir : 1 }; render(); }
   else if (t.dataset.tab) { S.tab = t.dataset.tab; render(); }
   else if (t.dataset.action === "rerun") rerun();
+  else if (t.dataset.action === "theme") {
+    const next = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem("partnerly-theme", next); } catch (e) { /* storage blocked: the choice lasts for this page only */ }
+    renderShell();
+  }
   else if (t.dataset.action === "dclear") { S.dash = { ter: "", pin: "", tier: "" }; render(); }
   else if (t.dataset.action === "sample") loadSample();
   else if (t.dataset.action === "export") downloadExport();
