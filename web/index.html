@@ -758,6 +758,13 @@ tr.click:hover td { background: color-mix(in srgb, var(--a1) 7%, transparent); }
 .drop:hover, .drop.over { border-color: var(--a1); background: color-mix(in srgb, var(--a1) 9%, transparent); transform: scale(1.01); }
 .stats div, .stats div:first-child { border-color: var(--border); }
 .hero .drop { margin-top: 18px; }
+.hero-media { position: relative; }
+.snd { position: absolute; right: 12px; bottom: 12px; width: 38px; height: 38px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer; color: #fff;
+  background: rgba(8, 14, 13, .55); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22);
+  transition: transform .35s var(--spring), background .2s; }
+.snd:hover { transform: scale(1.08); background: rgba(8, 14, 13, .72); }
+.snd[aria-pressed="true"] { color: var(--a0); }
+.snd svg.i { width: 18px; height: 18px; }
 .hero-media video { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 18px; background: var(--surface-2);
   box-shadow: 0 0 0 1px var(--border-strong), 0 18px 40px -18px rgba(0, 0, 0, .55); }
 .stats div:nth-child(n) b { color: var(--text); font-weight: 600; letter-spacing: -.04em; }
@@ -973,6 +980,8 @@ const ICONS = {
   mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6.5l8.5 6 8.5-6"/>',
   copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/>',
   external: '<path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/>',
+  volume: '<path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 010 7"/><path d="M19 6a8.5 8.5 0 010 12"/>',
+  mute: '<path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9.5l5 5M22 9.5l-5 5"/>',
 };
 const ic = (n, cls = "") => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ""}</svg>`;
 
@@ -990,6 +999,7 @@ const SEV = { blocking: ["block", "Blocking issue"], decision: ["flag", "Decisio
 let S = { view: "upload", session: null, original: null, result: null, summary: null, warnings: [], fileName: null,
           messages: [], changeLog: [], selected: null, filters: { dec: "", ter: "", q: "" }, sort: { key: "", dir: 1 },
           tab: "overview", assistant: window.innerWidth > 1280, mailTo: {}, drafted: {} };
+let SOUND = false;  // upload-page video: starts muted (browsers only autoplay silent video); the viewer turns sound on
 let META = null, BUSY = false, FLASH = new Set(), LAST = { view: null, sel: null, run: null };
 
 // ---------------------------------------------------------------- utilities
@@ -1212,8 +1222,9 @@ function viewUpload() {
         <a class="btn" href="/api/template" download>${ic("file")}Empty template</a>
       </div>
       <div class="drop" id="drop" role="button" tabindex="0"><div class="d-ico">${ic("upload")}</div><b>Drop your .xlsx file here</b><span>or click to browse · up to 10 MB</span></div></div>
-    <div class="hero-media"><video src="/media/store-opening.mp4" poster="/media/store-opening.jpg" ${REDUCED ? "controls" : "autoplay"} muted loop playsinline preload="metadata"
-      aria-label="Animation: a neighbourhood store opening its doors"></video></div>
+    <div class="hero-media"><video id="hero-video" src="/media/store-opening.mp4" poster="/media/store-opening.jpg" ${REDUCED ? "controls" : "autoplay"} ${SOUND ? "" : "muted"} loop playsinline preload="metadata"
+      aria-label="Animation: a neighbourhood store opening its doors"></video>
+      <button class="snd" data-action="sound" aria-pressed="${SOUND}" aria-label="${SOUND ? "Mute video" : "Turn video sound on"}" title="${SOUND ? "Mute" : "Sound on"}">${ic(SOUND ? "volume" : "mute")}</button></div>
   </div>`;
   if (S.summary) {
     const s = S.summary;
@@ -1754,6 +1765,12 @@ document.addEventListener("click", (ev) => {
     renderShell();
   }
   else if (t.dataset.action === "dclear") { S.dash = { ter: "", pin: "", tier: "" }; render(); regrow(); }
+  else if (t.dataset.action === "sound") {
+    const v = $("hero-video"); SOUND = !SOUND;
+    if (v) { v.muted = !SOUND; if (SOUND && v.paused) v.play().catch(() => {}); }
+    t.setAttribute("aria-pressed", SOUND); t.setAttribute("aria-label", SOUND ? "Mute video" : "Turn video sound on");
+    t.title = SOUND ? "Mute" : "Sound on"; t.innerHTML = ic(SOUND ? "volume" : "mute");
+  }
   else if (t.dataset.action === "sample") loadSample();
   else if (t.dataset.action === "export") downloadExport();
   else if (t.dataset.action === "reset" || t.id === "reset") { ev.preventDefault(); resetToUpload(); }
