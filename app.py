@@ -38,6 +38,7 @@ class Session(BaseModel):
 
 class ChatIn(Session):
     message: str
+    change_log: list[dict] = Field(default_factory=list)
 
 
 class ExportIn(Session):
@@ -178,7 +179,8 @@ def chat_message(s: ChatIn):
     def signals_fn(apps):
         return resolve_signals(apps, sig, use_llm)
 
-    out = chat.handle(msg, s.applications, s.territories, stores, result, today, use_llm, signals_fn=signals_fn)
+    out = chat.handle(msg, s.applications, s.territories, stores, result, today, use_llm, signals_fn=signals_fn,
+                      change_log=s.change_log)
     resp = {k: out.get(k) for k in ("kind", "reply", "changes", "updates", "parsed_by", "targets")}
     if out.get("result"):
         resp["result"] = out["result"]

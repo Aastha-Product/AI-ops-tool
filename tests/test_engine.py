@@ -315,6 +315,31 @@ def test_chat_what_if_is_not_saved(data, result):
     assert out["kind"] == "what_if" and "result" not in out
 
 
+def test_chat_changes_carry_each_applicants_own_change(data, result):
+    out = _chat(data, result, "APP-012 has now found a ground-floor space")
+    by_id = {c["app_id"]: c for c in out["changes"]}
+    assert by_id["APP-012"]["summary"].startswith("On hold → Approved")
+    assert by_id["APP-019"]["summary"].startswith("Approved → Waitlisted")
+    # APP-020 stays Approved but slips a rank: the summary must say so
+    assert by_id["APP-020"]["summary"].startswith("still Approved; rank ")
+
+
+def test_chat_answers_what_changed_from_change_log(data, result):
+    out = _chat(data, result, "APP-012 has now found a ground-floor space")
+    log = [{"time": "10:00", "message": "APP-012 has now found a ground-floor space", "affected": [c["app_id"] for c in out["changes"]],
+            "per_app": {c["app_id"]: {"old": c["old"], "new": c["new"], "text": c["summary"]} for c in out["changes"]}}]
+    q = chat.handle("What changed for APP-019?", out["apps"], data["territories"], data["stores"], out["result"], TODAY,
+                    use_llm=False, change_log=log)
+    assert q["kind"] == "question" and "result" not in q
+    assert "ground-floor" in q["reply"] and "Approved → Waitlisted" in q["reply"]
+    assert "Decision from the uploaded file: Approved" in q["reply"]
+    # an applicant no update touched says so, and the ordinary why-question is unchanged
+    q2 = chat.handle("What changed for APP-001?", out["apps"], data["territories"], data["stores"], out["result"], TODAY,
+                     use_llm=False, change_log=log)
+    assert "No chat updates have changed APP-001" in q2["reply"]
+    assert "chat update" not in _chat(data, result, "Why is APP-007 on hold?")["reply"]
+
+
 # ---------------------------------------------------------------- regressions found with a second dataset
 def test_zero_slot_territory_waitlists_without_crashing(data):
     ters = copy.deepcopy(data["territories"])

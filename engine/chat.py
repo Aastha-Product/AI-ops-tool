@@ -42,6 +42,8 @@ FIELD_LABELS = {"investment": "investment", "experience": "experience", "space":
 QUESTION_START = re.compile(r"^\s*(why|what|who|whom|whose|how|which|when|where|is|are|was|were|does|do|did|can|could|"
                             r"should|would|will|show|list|explain|tell|compare|give|summari[sz]e|describe)\b", re.I)
 WHAT_IF = re.compile(r"^\s*(what if|what happens if|suppose|supposing|if|imagine|hypothetically)\b", re.I)
+HISTORY_Q = re.compile(r"\bwhat('s| has| have)? changed\b|\bchanges? (for|to|on|in)\b|\bhistory\b|\bchange ?log\b|\boriginal(ly)?\b|"
+                       r"\bused to be\b|\bbefore (the|this|that|any) (update|change)|\bwhy did .*\b(move|drop|go|change|become|get)\b", re.I)
 
 _answer_cache: dict[str, str] = {}
 _parse_cache: dict[str, dict] = {}
@@ -318,10 +320,49 @@ def diff_results(before: dict, after: dict) -> list[dict]:
         if not old:
             continue
         if old["decision"] != new["decision"] or old.get("rank") != new.get("rank") or old.get("score") != new.get("score"):
-            out.append({"app_id": aid, "old": old["decision"], "new": new["decision"], "old_score": old.get("score"),
-                        "new_score": new.get("score"), "old_rank": old.get("rank_text"), "new_rank": new.get("rank_text"),
-                        "reason": new["headline"]})
+            c = {"app_id": aid, "old": old["decision"], "new": new["decision"], "old_score": old.get("score"),
+                 "new_score": new.get("score"), "old_rank": old.get("rank_text"), "new_rank": new.get("rank_text"),
+                 "reason": new["headline"]}
+            out.append({**c, "summary": change_summary(c)})
     return out
+
+
+def change_summary(c: dict) -> str:
+    """One applicant's own change in a re-run, e.g. 'still Approved; rank 1st of 2 → 2nd of 3'."""
+    parts = [f"{c['old']} → {c['new']}" if c["old"] != c["new"] else f"still {c['new']}"]
+    if c.get("old_rank") != c.get("new_rank"):
+        parts.append(f"rank {c.get('old_rank') or 'none'} → {c.get('new_rank') or 'none'}")
+    if c.get("old_score") != c.get("new_score"):
+        old = fmt_num(c["old_score"]) if c.get("old_score") is not None else "none"
+        new = fmt_num(c["new_score"]) if c.get("new_score") is not None else "none"
+        parts.append(f"score {old} → {new}")
+    return "; ".join(parts)
+
+
+def history_for(change_log: list[dict] | None, aid: str) -> list[dict]:
+    """Chat updates (oldest first) that affected one applicant, with that applicant's own change."""
+    out = []
+    for e in change_log or []:
+        if aid not in (e.get("affected") or []):
+            continue
+        own = (e.get("per_app") or {}).get(aid)
+        if not own:  # entries logged before per-applicant detail existed
+            hit = next((x for x in e.get("changes", []) if str(x).startswith(f"{aid}:")), None)
+            own = {"text": hit.split(":", 1)[1].strip() if hit else "rank or score changed"}
+        out.append({"time": e.get("time", ""), "message": e.get("message", ""), "own": own})
+    return out
+
+
+def with_history(result: dict, change_log: list[dict] | None) -> dict:
+    """Copy of result whose records carry their change_log lines (read by record_brief / template_answer)."""
+    if not change_log:
+        return result
+    recs = {}
+    for aid, r in result["records"].items():
+        hist = history_for(change_log, aid)
+        recs[aid] = {**r, "change_log": [f"{h['time']} – “{h['message']}”: {h['own']['text']}" for h in hist],
+                     "original_decision": hist[0]["own"].get("old") if hist else None}
+    return {**result, "records": recs}
 
 
 def _decision_line(rec: dict) -> str:
@@ -373,6 +414,7 @@ def record_brief(rec: dict) -> dict:
         if rec["training"] else None,
         "planned_opening": rec["checklist"]["planned_opening_text"] if rec["checklist"] else None,
         "change_history": rec.get("change_log", []),
+        "decision_in_uploaded_file": rec.get("original_decision"),
     }
 
 
@@ -382,6 +424,15 @@ def template_answer(question: str, recs: list[dict], result: dict) -> str:
         return compare_answer(recs[0], recs[1])
     rec = recs[0]
     head = f"**{rec['app_id']}** ({rec['name']}, {rec['city']}, pin {rec['pin']}) is **{rec['decision']}**."
+    if HISTORY_Q.search(question):
+        log = rec.get("change_log") or []
+        if not log:
+            return f"{head} No chat updates have changed {rec['app_id']} in this session, so this is the decision from the uploaded file. {rec['headline']}"
+        lines = [f"{head} {len(log)} chat update(s) in this session affected {rec['app_id']} (oldest first):"]
+        lines += [f"- {x}" for x in log]
+        if rec.get("original_decision"):
+            lines.append(f"Decision from the uploaded file: {rec['original_decision']}. Now: {rec['headline']}")
+        return "\n".join(lines)
     if re.search(r"train|prepare|shadow|module|language", q):
         if rec["training"]:
             t = rec["training"]
@@ -521,7 +572,8 @@ def llm_answer(question: str, payload: dict, reference: str) -> str | None:
     return text
 
 
-def answer_question(msg: str, ids: list[str], result: dict, use_llm: bool) -> str:
+def answer_question(msg: str, ids: list[str], result: dict, use_llm: bool, change_log: list[dict] | None = None) -> str:
+    result = with_history(result, change_log)
     recs = [result["records"][i] for i in ids]
     tids = resolve_territories(msg, [t["territory_id"] for t in result["territories"]])
     if recs:
@@ -549,11 +601,12 @@ def answer_question(msg: str, ids: list[str], result: dict, use_llm: bool) -> st
 
 # ---------------------------------------------------------------- entry point
 def handle(msg: str, apps: list[dict], territories: list[dict], stores: list[dict], result: dict,
-           today: dt.date, use_llm: bool, signals_fn=None) -> dict:
+           today: dt.date, use_llm: bool, signals_fn=None, change_log: list[dict] | None = None) -> dict:
     """Process one chat message. Returns {kind, reply, apps?, result?, changes?, updates?}.
 
     signals_fn(apps) -> {app_id: signals} lets a caller reuse text signals it already
-    has (the stateless web API passes the browser's copy back in)."""
+    has (the stateless web API passes the browser's copy back in). change_log is the
+    caller's list of earlier chat updates, so "what changed for APP-019?" can be answered."""
     known = [a["app_id"] for a in apps]
     names = {a["app_id"]: a.get("name") for a in apps}
     ids, unknown = resolve_ids(msg, known, names)
@@ -602,8 +655,8 @@ def handle(msg: str, apps: list[dict], territories: list[dict], stores: list[dic
     if not valid:
         if ids and not looks_question and (problems or unclear):
             note = "I could not turn that into an update: " + "; ".join(problems + unclear) + ". Nothing was changed.\n\n"
-            return {"kind": "question", "reply": unknown_note + note + answer_question(msg, ids, result, use_llm)}
-        return {"kind": "question", "reply": unknown_note + answer_question(msg, ids, result, use_llm)}
+            return {"kind": "question", "reply": unknown_note + note + answer_question(msg, ids, result, use_llm, change_log)}
+        return {"kind": "question", "reply": unknown_note + answer_question(msg, ids, result, use_llm, change_log)}
 
     new_apps, lines = apply_updates(apps, valid)
     sig = signals_fn(new_apps) if signals_fn else text_signals.extract_all(new_apps, use_llm)

@@ -70,9 +70,10 @@ def export_xlsx(result: dict, change_log: list[dict] | None = None) -> bytes:
     for row in ws.iter_rows(min_row=2, min_col=6, max_col=6):
         for c in row:
             c.alignment = Alignment(wrap_text=True, vertical="top")
-    _sheet(wb, "Change log", ["Time", "Message", "Applied", "Decision changes"],
-           [[e.get("time"), e.get("message"), "; ".join(e.get("updates", [])), "; ".join(e.get("changes", []))]
-            for e in (change_log or [])] or [["", "No chat updates", "", ""]], [10, 60, 80, 60])
+    _sheet(wb, "Change log", ["Time", "Message", "Applied", "Decision changes", "Effect on each applicant"],
+           [[e.get("time"), e.get("message"), "; ".join(e.get("updates", [])), "; ".join(e.get("changes", [])),
+             "; ".join(f"{aid}: {v.get('text', '')}" for aid, v in (e.get("per_app") or {}).items())]
+            for e in (change_log or [])] or [["", "No chat updates", "", "", ""]], [10, 60, 80, 60, 80])
     buf = io.BytesIO()
     wb.save(buf)
     return buf.getvalue()

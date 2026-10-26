@@ -238,6 +238,7 @@ td.wrap { white-space: normal; min-width: 220px; max-width: 420px; }
 .timeline .t-top b { color: var(--text); font-weight: 600; }
 .timeline .t-when { font-size: 12.5px; color: var(--brand); font-weight: 600; }
 .timeline .t-det { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+.timeline .t-own { font-size: 13.5px; color: var(--text); font-weight: 600; margin-top: 4px; }
 .timeline .t-done { font-size: 12px; color: var(--muted); }
 .kv { display: grid; grid-template-columns: 200px 1fr; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
 .kv div { padding: 9px 12px; border-bottom: 1px solid var(--border); } .kv div:nth-last-child(-n+2) { border-bottom: 0; }
@@ -720,13 +721,21 @@ async function send(text) {
   if (!S.result) { S.messages.push({ role: "assistant", content: "Upload a file or load the sample data first, then ask me about any applicant." }); render(); return; }
   busy(true);
   try {
-    const j = await postJSON("/api/chat", sessionBody({ message: text }));
+    const j = await postJSON("/api/chat", sessionBody({ message: text, change_log: S.changeLog }));
     S.messages.push({ role: "assistant", content: j.reply });
     if (j.result) {
+      const before = S.result.records;
       S.session.applications = j.applications; S.session.signals = j.signals; S.result = j.result;
       const affected = [...new Set([...(j.targets || []), ...(j.changes || []).map((c) => c.app_id)])];
       const changes = (j.changes || []).filter((c) => c.old !== c.new).map((c) => `${c.app_id}: ${c.old} → ${c.new}`);
-      S.changeLog.push({ time: new Date().toLocaleTimeString(), message: text, parsed_by: j.parsed_by, updates: j.updates, affected, changes });
+      // each affected applicant's own change, so its History entry says what happened to it
+      const per_app = {};
+      for (const c of j.changes || []) per_app[c.app_id] = { old: c.old, new: c.new, text: c.summary };
+      for (const id of j.targets || []) if (!per_app[id] && before[id]) {
+        const d = before[id].decision;
+        per_app[id] = { old: d, new: d, text: `still ${d}; decision, score and rank unchanged` };
+      }
+      S.changeLog.push({ time: new Date().toLocaleTimeString(), message: text, parsed_by: j.parsed_by, updates: j.updates, affected, changes, per_app });
       toast(changes.length ? `Re-decided: ${changes.length} decision(s) changed.` : "Updated; no decisions changed.");
     }
   } catch (e) { S.messages.push({ role: "assistant", content: "Sorry, that request failed: " + e.message }); }
@@ -1217,6 +1226,7 @@ function detailTab(r) {
   if (S.tab === "history") {
     const log = logFor(r);
     return log.length ? `<ol class="timeline">${log.map((e) => `<li><span class="dot"></span><div class="t-top"><b>“${esc(e.message)}”</b><span class="t-when">${esc(e.time)}</span></div>
+      ${e.per_app && e.per_app[r.app_id] ? `<div class="t-own">${esc(r.app_id)}: ${esc(e.per_app[r.app_id].text)}</div>` : ""}
       <div class="t-det">Applied: ${esc(e.updates.join("; "))}</div><div class="t-done">Decision changes: ${esc(e.changes.join(", ") || "none")}</div></li>`).join("")}</ol>`
       : `<div class="empty">${ic("clock")}<div>No chat updates have affected this applicant.</div></div>`;
   }

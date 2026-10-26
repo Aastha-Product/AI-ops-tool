@@ -64,6 +64,14 @@ def test_chat_update_and_knock_on():
     s2 = {**j["session"], "applications": r["applications"], "signals": r["signals"]}
     q = client.post("/api/chat", json={**s2, "message": "Why is APP-019 waitlisted?"}).json()
     assert q["kind"] == "question" and "APP-012" in q["reply"]
+    # the browser also sends its change log, so the assistant can say what changed
+    log = [{"time": "10:00", "message": "APP-012 has now found a ground-floor space", "affected": ["APP-012", "APP-019", "APP-020"],
+            "per_app": {c["app_id"]: {"old": c["old"], "new": c["new"], "text": c["summary"]} for c in r["changes"]}}]
+    h = client.post("/api/chat", json={**s2, "message": "What changed for APP-019 today?", "change_log": log}).json()
+    assert h["kind"] == "question" and "Approved → Waitlisted" in h["reply"]
+    x = client.post("/api/export", json={**s2, "change_log": log})
+    ws = openpyxl.load_workbook(io.BytesIO(x.content))["Change log"]
+    assert ws.cell(1, 5).value == "Effect on each applicant" and "APP-020: still Approved; rank" in ws.cell(2, 5).value
 
 
 def test_chat_question_and_unknown_id():
