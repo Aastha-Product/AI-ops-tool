@@ -331,10 +331,10 @@ def change_summary(c: dict) -> str:
     """One applicant's own change in a re-run, e.g. 'still Approved; rank 1st of 2 → 2nd of 3'."""
     parts = [f"{c['old']} → {c['new']}" if c["old"] != c["new"] else f"still {c['new']}"]
     if c.get("old_rank") != c.get("new_rank"):
-        parts.append(f"rank {c.get('old_rank') or 'none'} → {c.get('new_rank') or 'none'}")
+        parts.append(f"rank {c.get('old_rank') or 'not ranked'} → {c.get('new_rank') or 'not ranked'}")
     if c.get("old_score") != c.get("new_score"):
-        old = fmt_num(c["old_score"]) if c.get("old_score") is not None else "none"
-        new = fmt_num(c["new_score"]) if c.get("new_score") is not None else "none"
+        old = fmt_num(c["old_score"]) if c.get("old_score") is not None else "not scored"
+        new = fmt_num(c["new_score"]) if c.get("new_score") is not None else "not scored"
         parts.append(f"score {old} → {new}")
     return "; ".join(parts)
 
