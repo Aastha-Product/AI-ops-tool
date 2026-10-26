@@ -757,6 +757,9 @@ tr.click:hover td { background: color-mix(in srgb, var(--a1) 7%, transparent); }
 .drop { border-radius: 20px; border-color: var(--border-strong); background: var(--surface-2); transition: border-color .25s, background .25s, transform .4s var(--spring); }
 .drop:hover, .drop.over { border-color: var(--a1); background: color-mix(in srgb, var(--a1) 9%, transparent); transform: scale(1.01); }
 .stats div, .stats div:first-child { border-color: var(--border); }
+.hero .drop { margin-top: 18px; }
+.hero-media video { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 18px; background: var(--surface-2);
+  box-shadow: 0 0 0 1px var(--border-strong), 0 18px 40px -18px rgba(0, 0, 0, .55); }
 .stats div:nth-child(n) b { color: var(--text); font-weight: 600; letter-spacing: -.04em; }
 
 /* ---- assistant: floating glass panel that slides in */
@@ -1207,8 +1210,10 @@ function viewUpload() {
         <button class="btn primary" data-action="sample">${ic("table")}Use sample data</button>
         <a class="btn" href="/api/sample-file" download>${ic("download")}Sample file</a>
         <a class="btn" href="/api/template" download>${ic("file")}Empty template</a>
-      </div></div>
-    <div class="drop" id="drop" role="button" tabindex="0"><div class="d-ico">${ic("upload")}</div><b>Drop your .xlsx file here</b><span>or click to browse · up to 10 MB</span></div>
+      </div>
+      <div class="drop" id="drop" role="button" tabindex="0"><div class="d-ico">${ic("upload")}</div><b>Drop your .xlsx file here</b><span>or click to browse · up to 10 MB</span></div></div>
+    <div class="hero-media"><video src="/media/store-opening.mp4" poster="/media/store-opening.jpg" ${REDUCED ? "controls" : "autoplay"} muted loop playsinline preload="metadata"
+      aria-label="Animation: a neighbourhood store opening its doors"></video></div>
   </div>`;
   if (S.summary) {
     const s = S.summary;

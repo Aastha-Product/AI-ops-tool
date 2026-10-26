@@ -13,7 +13,7 @@ import datetime as dt
 from pathlib import Path
 
 from fastapi import FastAPI, File, HTTPException, Query, UploadFile
-from fastapi.responses import HTMLResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, Response
 from pydantic import BaseModel, Field
 
 from engine import chat, parser, pipeline, refdata, text_signals
@@ -116,6 +116,18 @@ def favicon():
     svg = ("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='#1f3864'/>"
            "<path d='M7 14h18v11H7z' fill='#fff'/><path d='M5 14l3-6h16l3 6z' fill='#93c5fd'/></svg>")
     return Response(svg, media_type="image/svg+xml")
+
+
+MEDIA = {"store-opening.mp4": "video/mp4", "store-opening.jpg": "image/jpeg"}
+
+
+@app.get("/media/{name}", include_in_schema=False)
+def media(name: str):
+    # Only the bundled upload-page media; FileResponse handles range requests for video seeking.
+    if name not in MEDIA:
+        raise HTTPException(404, "Not found.")
+    return FileResponse(ROOT / "public" / "media" / name, media_type=MEDIA[name],
+                        headers={"Cache-Control": "public, max-age=86400"})
 
 
 @app.get("/api/meta")
